@@ -1,6 +1,6 @@
 
 #include "Arduino.h"
-#include "ODriveLib.h"
+#include "odrivelib.h"
 
 static const int kMotorOffsetFloat = 2;
 static const int kMotorStrideFloat = 28;

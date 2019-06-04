@@ -1,12 +1,16 @@
 /* Calibration Header */
-#ifndef Calibration_h
-#define Calibration_h
+#ifndef CALIBRATION_H
+#define CALIBRATION_H
 
-/* Includes --------------------------------------------------------*/
+/* Includes ------------------------------------------------------------*/
 #include "Arduino.h"
-#include "ODriveLib.h"
+#include <HardwareSerial.h>
 
-#define hello   10
+#include "options.h"
+#include "odrivelib.h"
 
+/* Functions------------------------------------------------------------*/
+void odrive_startup_sequence(ODriveClass& );
+void odrive_startup_check(ODriveClass& , bool*);
 
-#endif //Calibration_h
+#endif //CALIBRATION_H

@@ -1,8 +1,9 @@
-
-#ifndef ODriveLib_h
-#define ODriveLib_h
+/* ODrive Library Header */
+#ifndef ODRIVELIB_H
+#define ODRIVELIB_H
 
 #include "Arduino.h"
+#include "options.h"
 
 class ODriveClass {
 public:
@@ -41,4 +42,4 @@ private:
     Stream& serial_;
 };
 
-#endif //ODriveLib_h
+#endif //ODRIVELIB_H
