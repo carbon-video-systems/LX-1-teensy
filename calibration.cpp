@@ -104,7 +104,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
             current_state = odrive.readState(axis);
             delay(100);
 
-        } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL || current_state != ODriveClass::AXIS_STATE_IDLE);
+        } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
 
         #ifdef TESTING
             SerialUSB.print("odrive ");
