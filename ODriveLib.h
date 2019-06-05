@@ -30,6 +30,24 @@ public:
     void SetCurrent(int motor_number, float current);
     void TrapezoidalMove(int motor_number, float position);
 
+    // Motor Configuration Commands
+    int MotorCalibrationStatus(int axis);
+    void MotorPreCalibrated(int axis, bool request);
+
+    // Encoder Configuration Commands
+    int EncoderReadyStatus(int axis);
+    void EncoderUseIndex(int axis, bool request);
+    void EncoderPreCalibrated(int axis, bool request);
+
+    // Startup Configuration Commands
+    void StartupMotorCalibration(int axis, bool request);
+    void StartupEncoderIndexSearch(int axis, bool request);
+    void StartupEncoderOffsetCalibration(int axis, bool request);
+    void StartupClosedLoop(int axis, bool request);
+    void StartupSensorless(int axis, bool request);
+
+    // System Commands
+    float BusVoltage(void);
     void SaveConfiguration(void);
     void EraseConfiguration(void);
     void Reboot(void);

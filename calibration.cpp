@@ -28,21 +28,37 @@ void odrive_startup_sequence(ODriveClass& odrive){
                 SerialUSB.println(axis);
             #endif
 
-            // my_drive.axis0.motor.is_calibrated == true
-            // my_drive.axis0.encoder.is_ready == true
-            //      reset startup configuration
-            // else
-            //      calibrate encoder + startup configuration
-            // else 
-            //  full calibration : set axis limits + motor calibrate + encoder calibrate + startup config
-            // calibration sequence
+            if (odrive.MotorCalibrationStatus(axis)){
+                if (odrive.EncoderReadyStatus(axis)){
+                    ReconfigureStartup(odrive, axis);
+                }
+                else{
+                    // calibrate encoder
+                    ReconfigureStartup(odrive, axis);
+                }
+
+            }
+            else {
+                // FULL CALIBRATION SEQUENCE 
+                // set axis limits
+                // motor calibration
+                // encoder calibration
+                ReconfigureStartup(odrive, axis);
+            }
         }
     }
 
-    // save calibration and reboot if either axis were reconfigured
+    // save calibration and reboot if either axis needs reconfiguration
     if (!calibration_status[0] || !calibration_status[numMotors -1]){
+        #ifdef TESTING
+            SerialUSB.println("Saving calibration and rebooting");
+        #endif
+
+        odrive.SaveConfiguration();
         delay(100);
-        //save calibration + reboot
+
+        odrive.Reboot();
+        delay(1000);
     }
 
     return;
@@ -103,4 +119,24 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
         }
     }
     return;
+}
+
+/**
+  * @brief  Reconfigure ODrive startup sequence
+  * @param  ODriveClass& odrive - ODriveClass instantiated object
+  * @param  int axis - motor axis to be reconfigured
+  * @return void
+  */
+void ReconfigureStartup(ODriveClass& odrive, int axis){
+    #ifdef TESTING
+        SerialUSB.print("Reconfiguring axis ");
+        SerialUSB.print(axis);
+        SerialUSB.println(" startup sequence");
+    #endif
+
+    odrive.StartupMotorCalibration(axis, false);
+    odrive.StartupEncoderIndexSearch(axis, true);
+    odrive.StartupEncoderOffsetCalibration(axis, false);
+    odrive.StartupClosedLoop(axis, true);
+    odrive.StartupSensorless(axis, false);
 }

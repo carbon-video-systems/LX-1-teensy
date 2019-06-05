@@ -18,6 +18,7 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 ODriveClass::ODriveClass(Stream& serial)
     : serial_(serial) {}
 
+// ODrive Movement Commands
 void ODriveClass::SetPosition(int motor_number, float position) {
     SetPosition(motor_number, position, 0.0f, 0.0f);
 }
@@ -46,6 +47,56 @@ void ODriveClass::TrapezoidalMove(int motor_number, float position){
     serial_ << "t " << motor_number << " " << position << "\n";
 }
 
+// Motor configuration Commands
+int ODriveClass::MotorCalibrationStatus(int axis){
+    serial_ << "r axis" << axis << ".motor.is_calibrated\n";
+    return readInt();
+}
+
+void ODriveClass::MotorPreCalibrated(int axis, bool request){
+    serial_ << "w axis" << axis << ".motor.config.pre_calibrated " << request << "\n";
+}
+
+// Encoder Configuration Commands
+int ODriveClass::EncoderReadyStatus(int axis){
+    serial_ << "r axis" << axis << ".encoder.is_ready";
+    return readInt();
+}
+
+void ODriveClass::EncoderUseIndex(int axis, bool request){
+    serial_ << "w axis" << axis << ".encoder.config.use_index " << request << "\n";
+}
+
+void ODriveClass::EncoderPreCalibrated(int axis, bool request){
+    serial_ << "w axis" << axis << ".encoder.config.pre_calibrated " << request << "\n";
+}
+
+// Startup Configuration Commands
+void ODriveClass::StartupMotorCalibration(int axis, bool request){
+    serial_ << "w axis" << axis << ".startup_motor_calibration " << request << "\n";
+}
+
+void ODriveClass::StartupEncoderIndexSearch(int axis, bool request){
+    serial_ << "w axis" << axis << ".startup_encoder_index_search " << request << "\n";
+}
+
+void ODriveClass::StartupEncoderOffsetCalibration(int axis, bool request){
+    serial_ << "w axis" << axis << ".startup_encoder_offset_calibration " << request << "\n";
+}
+
+void ODriveClass::StartupClosedLoop(int axis, bool request){
+    serial_ << "w axis" << axis << ".startup_closed_loop_control " << request << "\n";
+}
+
+void ODriveClass::StartupSensorless(int axis, bool request){
+    serial_ << "w axis" << axis << ".startup_sensorless_control " << request << "\n";
+}
+
+// System Configuration Commands
+float ODriveClass::BusVoltage(void){
+    serial_ << "r vbus_voltage\n";
+    return readFloat();
+}
 
 void ODriveClass::SaveConfiguration(void){
     serial_ << "ss\n";
@@ -58,6 +109,7 @@ void ODriveClass::EraseConfiguration(void){
 void ODriveClass::Reboot(void){
     serial_ << "sb\n";
 }
+
 
 float ODriveClass::readFloat() {
     return readString().toFloat();
