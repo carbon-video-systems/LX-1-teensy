@@ -64,13 +64,19 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
     // search for post-startup ODrive
     for (int axis = 0; axis < numMotors; axis++) {
 
-        current_state = odrive.readState(axis);
+        // current_state = odrive.readState(axis);
 
-        while(current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL || current_state != ODriveClass::AXIS_STATE_IDLE){
-            delay(100);
+        // while(current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL || current_state != ODriveClass::AXIS_STATE_IDLE){
+        //     delay(100);
+        //     current_state = odrive.readState(axis);
+        //     // Add code to handle a disconnected odrive
+        // }
+
+        do {
             current_state = odrive.readState(axis);
-            // Add code to handle a disconnected odrive
-        }
+            delay(100);
+
+        } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL || current_state != ODriveClass::AXIS_STATE_IDLE);
 
         #ifdef TESTING
             SerialUSB.print("odrive ");

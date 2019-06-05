@@ -46,6 +46,19 @@ void ODriveClass::TrapezoidalMove(int motor_number, float position){
     serial_ << "t " << motor_number << " " << position << "\n";
 }
 
+
+void ODriveClass::SaveConfiguration(void){
+    serial_ << "ss\n";
+}
+
+void ODriveClass::EraseConfiguration(void){
+    serial_ << "se\n";
+}
+
+void ODriveClass::Reboot(void){
+    serial_ << "sb\n";
+}
+
 float ODriveClass::readFloat() {
     return readString().toFloat();
 }

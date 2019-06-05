@@ -29,6 +29,11 @@ public:
     void SetVelocity(int motor_number, float velocity, float current_feedforward);
     void SetCurrent(int motor_number, float current);
     void TrapezoidalMove(int motor_number, float position);
+
+    void SaveConfiguration(void);
+    void EraseConfiguration(void);
+    void Reboot(void);
+
     // General params
     float readFloat();
     int32_t readInt();
