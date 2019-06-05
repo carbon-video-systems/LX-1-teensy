@@ -92,6 +92,35 @@ void ODriveClass::StartupSensorless(int axis, bool request){
     serial_ << "w axis" << axis << ".startup_sensorless_control " << request << "\n";
 }
 
+// Axis Limit Commands
+void ODriveClass::ConfigureBrakingResistance(float braking_resistance){
+    serial_ << "w config.brake_resistance " << braking_resistance << "\n";
+}
+
+void ODriveClass::ConfigureCurrentLimit(int axis, float current_limit){
+    serial_ << "w axis" << axis << ".motor.config.current_lim " << current_limit << "\n";
+}
+
+void ODriveClass::ConfigureCalibrationCurrent(int axis, float current_calib){
+    serial_ << "w axis" << axis << ".motor.config.calibration_current " << current_calib << "\n";
+}
+
+void ODriveClass::ConfigureVelLimit(int axis, float velocity){
+    serial_ << "w axis" << axis << ".controller.config.vel_limit " << velocity << "\n";
+}
+
+void ODriveClass::ConfigurePolePairs(int axis, int pole_pairs){
+    serial_ << "w axis" << axis << ".motor.config.pole_pairs " << pole_pairs << "\n";
+}
+
+void ODriveClass::ConfigureMotorType(int axis, int motor_type){
+    serial_ << "w axis" << axis << ".motor.config.motor_type " << motor_type << "\n";
+}
+
+void ODriveClass::ConfigureCPR(int axis, int cpr){
+    serial_ << "w axis" << axis << ".motor.config.cpr " << cpr << "\n";
+}
+
 // System Configuration Commands
 float ODriveClass::BusVoltage(void){
     serial_ << "r vbus_voltage\n";

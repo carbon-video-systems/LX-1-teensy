@@ -12,7 +12,6 @@
 #define SerialUSB       Serial
 #define odrive_serial   Serial1
 
-#define numMotors       2
-
+#define NUM_MOTORS      2
 
 #endif //OPTIONS_H
