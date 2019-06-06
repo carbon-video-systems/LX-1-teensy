@@ -16,6 +16,7 @@
 #define POLE_PAIRS          7   // magnet poles / 2
 #define MOTOR_TYPE          ODriveClass::MOTOR_TYPE_HIGH_CURRENT
 #define CPR                 8192    // counts/revolution
+#define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL
 
 // ODrive startup settings
 #define STARTUP_MOTOR_CALIBRATION           false
@@ -59,7 +60,7 @@ void odrive_startup_sequence(ODriveClass& odrive){
 
             }
             else {
-                // FULL CALIBRATION SEQUENCE 
+                // FULL CALIBRATION SEQUENCE
                 set_axis_limits(odrive, axis);
                 motor_calibrate(odrive, axis);
                 encoder_calibrate(odrive, axis);
@@ -103,11 +104,10 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
         do {
             current_state = odrive.readState(axis);
             delay(100);
-
         } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
 
         #ifdef TESTING
-            SerialUSB.print("odrive ");
+            SerialUSB.print("ODrive ");
             SerialUSB.print(axis);
             SerialUSB.print(" state : ");;
             SerialUSB.println(current_state);
@@ -119,14 +119,14 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
             calibration_status[axis] = true;
 
             #ifdef TESTING
-                SerialUSB.println("calibrated\n");
+                SerialUSB.println("calibrated");
             #endif
         }
         else{
             calibration_status[axis] = false;
             
             #ifdef TESTING
-                SerialUSB.println("not calibrated\n");
+                SerialUSB.println("not calibrated");
             #endif
         }
     }
@@ -160,6 +160,12 @@ void reconfigure_startup(ODriveClass& odrive, int axis){
   * @return void
   */
 void encoder_calibrate(ODriveClass& odrive, int axis){
+    #ifdef TESTING
+        SerialUSB.print("Calibrating axis ");
+        SerialUSB.print(axis);
+        SerialUSB.println(" encoder");
+    #endif
+
     odrive.EncoderUseIndex(axis, ENCODER_USE_INDEX);
     odrive.run_state(axis, ODriveClass::AXIS_STATE_ENCODER_INDEX_SEARCH, true);
     odrive.run_state(axis, ODriveClass::AXIS_STATE_ENCODER_OFFSET_CALIBRATION, true);
@@ -174,6 +180,12 @@ void encoder_calibrate(ODriveClass& odrive, int axis){
   * @return void
   */
 void motor_calibrate(ODriveClass& odrive, int axis){
+    #ifdef TESTING
+        SerialUSB.print("Calibrating axis ");
+        SerialUSB.print(axis);
+        SerialUSB.println(" motor");
+    #endif
+
     odrive.run_state(axis, ODriveClass::AXIS_STATE_MOTOR_CALIBRATION, true);
     odrive.MotorPreCalibrated(axis, MOTOR_PRE_CALIBRATED);
 }
@@ -197,4 +209,5 @@ void set_axis_limits(ODriveClass& odrive, int axis){
     odrive.ConfigurePolePairs(axis, POLE_PAIRS);
     odrive.ConfigureMotorType(axis, MOTOR_TYPE);
     odrive.ConfigureCPR(axis, CPR);
+    odrive.ConfigureEncoderMode(axis, ENCODER_MODE);
 }

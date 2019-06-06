@@ -1,4 +1,3 @@
-
 #include "Arduino.h"
 #include "odrivelib.h"
 
@@ -73,23 +72,23 @@ void ODriveClass::EncoderPreCalibrated(int axis, bool request){
 
 // Startup Configuration Commands
 void ODriveClass::StartupMotorCalibration(int axis, bool request){
-    serial_ << "w axis" << axis << ".startup_motor_calibration " << request << "\n";
+    serial_ << "w axis" << axis << ".config.startup_motor_calibration " << request << "\n";
 }
 
 void ODriveClass::StartupEncoderIndexSearch(int axis, bool request){
-    serial_ << "w axis" << axis << ".startup_encoder_index_search " << request << "\n";
+    serial_ << "w axis" << axis << ".config.startup_encoder_index_search " << request << "\n";
 }
 
 void ODriveClass::StartupEncoderOffsetCalibration(int axis, bool request){
-    serial_ << "w axis" << axis << ".startup_encoder_offset_calibration " << request << "\n";
+    serial_ << "w axis" << axis << ".config.startup_encoder_offset_calibration " << request << "\n";
 }
 
 void ODriveClass::StartupClosedLoop(int axis, bool request){
-    serial_ << "w axis" << axis << ".startup_closed_loop_control " << request << "\n";
+    serial_ << "w axis" << axis << ".config.startup_closed_loop_control " << request << "\n";
 }
 
 void ODriveClass::StartupSensorless(int axis, bool request){
-    serial_ << "w axis" << axis << ".startup_sensorless_control " << request << "\n";
+    serial_ << "w axis" << axis << ".config.startup_sensorless_control " << request << "\n";
 }
 
 // Axis Limit Commands
@@ -118,7 +117,11 @@ void ODriveClass::ConfigureMotorType(int axis, int motor_type){
 }
 
 void ODriveClass::ConfigureCPR(int axis, int cpr){
-    serial_ << "w axis" << axis << ".motor.config.cpr " << cpr << "\n";
+    serial_ << "w axis" << axis << ".encoder.config.cpr " << cpr << "\n";
+}
+
+void ODriveClass::ConfigureEncoderMode(int axis, int mode){
+    serial_ << "w axis" << axis << ".encoder.config.mode " << mode << "\n";
 }
 
 // System Configuration Commands
@@ -138,7 +141,6 @@ void ODriveClass::EraseConfiguration(void){
 void ODriveClass::Reboot(void){
     serial_ << "sb\n";
 }
-
 
 float ODriveClass::readFloat() {
     return readString().toFloat();

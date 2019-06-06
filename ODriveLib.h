@@ -75,6 +75,7 @@ public:
     void ConfigurePolePairs(int axis, int pole_pairs);
     void ConfigureMotorType(int axis, int motor_type);
     void ConfigureCPR(int axis, int cpr);
+    void ConfigureEncoderMode(int axis, int mode);
 
     // System Commands
     float BusVoltage(void);
