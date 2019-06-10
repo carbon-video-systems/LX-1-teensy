@@ -14,7 +14,7 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 
 /* Variables --------------------------------------------------------------------------------------*/
 ODriveClass odrive(odrive_serial);
-StormBreaker mjolnir;
+StormBreaker thor;
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -22,28 +22,23 @@ StormBreaker mjolnir;
  * @param   None
  * @return  None
  */
-void setup() {
-    uint8_t incoming_byte;
-
+void setup()
+{
     // ODrive uses 115200 baud
-    odrive_serial.begin(115200);
+    odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);
 
-    // Pi uses 9600 baud
+    // Pi uses 921600 baud
     pi_serial.begin(PI_SERIAL_BAUD);
     while(!odrive_serial);
 
     #ifdef TESTING
-        // Serial to PC
+        // USB uses 115200 baud
         SerialUSB.begin(115200);
-        while (!Serial); // wait for Arduino Serial Monitor to open]
+        while (!Serial); // wait for Arduino Serial Monitor to open
     #endif
 
-    if(pi_serial.available()){
-        mjolnir.servicePiMessage();
-    }
-
-    odrive_startup_sequence(odrive);
+    // odrive_startup_sequence(odrive);
 
     delay(100);
 }
@@ -53,6 +48,11 @@ void setup() {
  * @param   None
  * @return  None
  */
-void loop() {
-    delay(500);
+void loop()
+{
+    if(pi_serial.available()){
+        thor.serviceStormBreaker();
+    }
+
+    delay(100);
 }

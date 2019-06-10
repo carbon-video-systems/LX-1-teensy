@@ -6,6 +6,9 @@
 
 class StormBreaker {
 public:
+    void serviceStormBreaker();
+
+private:
     enum MessageType_t {
         ERROR = -2,
         WARNING = -1,
@@ -17,16 +20,13 @@ public:
     struct Header_t {
         MessageType_t type;
         uint8_t size; //in bytes
-    };
+    } Header;
 
-    void servicePiMessage();
-    void receiveArtNetBody();
-
-private:
     struct ArtNetBody_t {
         uint16_t pan;
         uint8_t pan_control;
         uint8_t pan_tilt_speed;
+        uint8_t power_special_functions;
     } ArtNetBody;
 
     struct ArtNetHead_t {
@@ -39,6 +39,12 @@ private:
         uint8_t pan_tilt_speed;
         uint8_t power_special_functions;
     } ArtNetHead;
+
+    void receiveStormBreaker();
+    void receiveArtNetBody();
+    void receiveArtNetHead();
+    void serviceArtNetBody();
+    void serviceArtNetHead();
 };
 
 #endif //STORMBREAKER_H

@@ -16,6 +16,8 @@
 #define pi_serial       Serial2
 
 #define NUM_MOTORS      2
-#define PI_SERIAL_BAUD  921600
+#define USB_SERIAL_BAUD     115200
+#define ODRIVE_SERIAL_BAUD  115200
+#define PI_SERIAL_BAUD      921600
 
 #endif //OPTIONS_H
