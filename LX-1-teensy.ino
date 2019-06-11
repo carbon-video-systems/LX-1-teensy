@@ -34,8 +34,8 @@ void setup()
 
     #ifdef TESTING
         // USB uses 115200 baud
-        SerialUSB.begin(115200);
-        while (!Serial); // wait for Arduino Serial Monitor to open
+        SerialUSB.begin(USB_SERIAL_BAUD);
+        while (!SerialUSB); // wait for Arduino Serial Monitor to open
     #endif
 
     // odrive_startup_sequence(odrive);
@@ -50,9 +50,12 @@ void setup()
  */
 void loop()
 {
-    if(pi_serial.available()){
-        thor.serviceStormBreaker();
+    if(SerialUSB.available()){
+        // SerialUSB.println(SerialUSB.read());
+        thor.serviceStormBreaker(odrive);
     }
 
-    delay(100);
+    SerialUSB.flush(); //TODO: remove this it is just for testing
+
+    // delay(100);
 }

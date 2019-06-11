@@ -1,9 +1,9 @@
 #include "stormbreaker.h"
 #include "options.h"
 
-void StormBreaker::serviceStormBreaker()
+void StormBreaker::serviceStormBreaker(ODriveClass& odrive)
 {
-    Header.type = (StormBreaker::MessageType_t)SerialUSB.read();
+    Header.type = (StormBreaker::MessageType_t)SerialUSB.read(); //TODO: change this back to pi serial
     Header.size = SerialUSB.read();
 
     #ifdef TESTING
@@ -24,10 +24,10 @@ void StormBreaker::serviceStormBreaker()
         case OK:
             break;
         case ARTNETBODY:
-            serviceArtNetBody();
+            serviceArtNetBody(odrive);
             break;
         case ARTNETHEAD:
-            serviceArtNetHead();
+            serviceArtNetHead(odrive);
             break;
         default:
             break;
@@ -93,12 +93,12 @@ void StormBreaker::receiveArtNetHead()
     #endif
 }
 
-void StormBreaker::serviceArtNetBody()
+void StormBreaker::serviceArtNetBody(ODriveClass& odrive)
 {
-    // ODriveClass::SetPosition();
+    odrive.SetPosition(0, ArtNetBody.pan);
 }
 
-void StormBreaker::serviceArtNetHead()
+void StormBreaker::serviceArtNetHead(ODriveClass& odrive)
 {
-    // ODriveClass::SetPosition();
+    odrive.SetPosition(1, ArtNetHead.tilt);
 }

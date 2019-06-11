@@ -9,7 +9,7 @@
 #include "HardwareSerial.h"
 
 /* Constants --------------------------------------------------------------------------------------*/
-// #define TESTING
+#define TESTING
 
 #define SerialUSB       Serial
 #define odrive_serial   Serial1

@@ -2,13 +2,14 @@
 #ifndef STORMBREAKER_H
 #define STORMBREAKER_H
 
+#include "ODriveLib.h"
+
 #include <stdint.h>
 
 class StormBreaker {
 public:
-    void serviceStormBreaker();
+    void serviceStormBreaker(ODriveClass& odrive);
 
-private:
     enum MessageType_t {
         ERROR = -2,
         WARNING = -1,
@@ -40,11 +41,12 @@ private:
         uint8_t power_special_functions;
     } ArtNetHead;
 
+private:
     void receiveStormBreaker();
     void receiveArtNetBody();
     void receiveArtNetHead();
-    void serviceArtNetBody();
-    void serviceArtNetHead();
+    void serviceArtNetBody(ODriveClass& odrive);
+    void serviceArtNetHead(ODriveClass& odrive);
 };
 
 #endif //STORMBREAKER_H
