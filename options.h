@@ -3,21 +3,46 @@
 #define OPTIONS_H
 
 /* Includes --------------------------------------------------------*/
-#include "Arduino.h"
+#include <Arduino.h>
+#include <HardwareSerial.h>
+
 #include "ODriveLib.h"
 
-#include "HardwareSerial.h"
-
 /* Constants --------------------------------------------------------------------------------------*/
+/* Define TESTING during prototyping */
 #define TESTING
+#ifdef TESTING
+    /* Testing specific stuff */
+#endif
+
+/* Define either BODY or HEAD but not both */
+#define BODY
+// #define HEAD
+#ifdef BODY
+    /* Body specific stuff */
+#elif defined HEAD
+    /* Head specific stuff */
+#endif
+
+/* Define ONE_MOTOR or TWO_MOTORS depending on the number of motors connected to a single ODrive */
+// #define ONE_MOTOR
+#define TWO_MOTORS   //this is primarily for testing purposes
+#ifdef ONE_MOTOR
+    #define NUM_MOTORS      1
+    #define MOTOR_BODY      0
+    #define MOTOR_HEAD      0
+#elif defined TWO_MOTORS
+    #define NUM_MOTORS      2
+    #define MOTOR_BODY      0
+    #define MOTOR_HEAD      1
+#endif
 
 #define SerialUSB       Serial
 #define odrive_serial   Serial1
 #define pi_serial       Serial2
 
-#define NUM_MOTORS      2
-#define USB_SERIAL_BAUD     115200
+#define USB_SERIAL_BAUD     921600
 #define ODRIVE_SERIAL_BAUD  115200
-#define PI_SERIAL_BAUD      921600
+#define PI_SERIAL_BAUD      115200
 
 #endif //OPTIONS_H

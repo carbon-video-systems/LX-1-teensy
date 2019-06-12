@@ -3,11 +3,11 @@
 #define CALIBRATION_H
 
 /* Includes ------------------------------------------------------------*/
-#include "Arduino.h"
+#include <Arduino.h>
 #include <HardwareSerial.h>
 
+#include "ODriveLib.h"
 #include "options.h"
-#include "odrivelib.h"
 
 /* Constants -----------------------------------------------------------*/
 

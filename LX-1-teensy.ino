@@ -1,10 +1,11 @@
 /* Includes ---------------------------------------------------------------------------------------*/
 #include <Arduino.h>
-#include "options.h"
 
-#include "ODriveLib.h"
-#include "stormbreaker.h"
 #include "calibration.h"
+#include "ODriveLib.h"
+#include "options.h"
+#include "stormbreaker.h"
+
 
 /* Constants --------------------------------------------------------------------------------------*/
 
@@ -14,7 +15,7 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 
 /* Variables --------------------------------------------------------------------------------------*/
 ODriveClass odrive(odrive_serial);
-StormBreaker thor;
+StormBreaker thor(odrive);
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -50,12 +51,12 @@ void setup()
  */
 void loop()
 {
-    if(SerialUSB.available()){
-        // SerialUSB.println(SerialUSB.read());
-        thor.serviceStormBreaker(odrive);
+    if(pi_serial.available()){
+        // SerialUSB.println(pi_serial.read());
+        thor.serviceStormBreaker();
     }
 
-    SerialUSB.flush(); //TODO: remove this it is just for testing
+    // pi_serial.flush(); //TODO: remove this it is just for testing
 
     // delay(100);
 }

@@ -1,5 +1,6 @@
-#include "Arduino.h"
-#include "odrivelib.h"
+#include <Arduino.h>
+
+#include "ODriveLib.h"
 
 static const int kMotorOffsetFloat = 2;
 static const int kMotorStrideFloat = 28;
@@ -122,6 +123,19 @@ void ODriveClass::ConfigureCPR(int axis, int cpr){
 
 void ODriveClass::ConfigureEncoderMode(int axis, int mode){
     serial_ << "w axis" << axis << ".encoder.config.mode " << mode << "\n";
+}
+
+// Trajectory Limit Commands
+void ODriveClass::ConfigureTrajVelLimit(int axis, float velocity){
+    serial_ << "w axis" << axis << "trap_traj.config.vel_limit " << velocity << "\n";
+}
+
+void ODriveClass::ConfigureTrajAccelLimit(int axis, float acceleration){
+    serial_ << "w axis" << axis << "trap_traj.config.accel_limit " << acceleration << "\n";
+}
+
+void ODriveClass::ConfigureTrajDecelLimit(int axis, float deceleration){
+    serial_ << "w axis" << axis << "trap_traj.config.decel_limit " << deceleration << "\n";
 }
 
 // System Configuration Commands

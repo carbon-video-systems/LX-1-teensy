@@ -2,7 +2,8 @@
 #ifndef ODRIVELIB_H
 #define ODRIVELIB_H
 
-#include "Arduino.h"
+#include <Arduino.h>
+
 #include "options.h"
 
 class ODriveClass {
@@ -76,6 +77,11 @@ public:
     void ConfigureMotorType(int axis, int motor_type);
     void ConfigureCPR(int axis, int cpr);
     void ConfigureEncoderMode(int axis, int mode);
+
+    // Trajectory Limit Commands
+    void ConfigureTrajVelLimit(int axis, float velocity);
+    void ConfigureTrajAccelLimit(int axis, float acceleration);
+    void ConfigureTrajDecelLimit(int axis, float deceleration);
 
     // System Commands
     float BusVoltage(void);
