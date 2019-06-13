@@ -39,7 +39,9 @@ void setup()
         while (!SerialUSB); // wait for Arduino Serial Monitor to open
     #endif
 
-    // odrive_startup_sequence(odrive);
+    odrive_startup_sequence(odrive);
+
+    pi_serial.println("Hi Raspberry Pi how are you today? :D");
 
     delay(100);
 }
@@ -55,8 +57,6 @@ void loop()
         // SerialUSB.println(pi_serial.read());
         thor.serviceStormBreaker();
     }
-
-    // pi_serial.flush(); //TODO: remove this it is just for testing
 
     // delay(100);
 }

@@ -1,10 +1,19 @@
+/* StormBreaker Source */
+
+/* Includes-------------------------------------------------------------*/
 #include "stormbreaker.h"
+#include "calibration.h"
 
-#define ARTNET_PAN_TILT_SPEED_SCALING_FACTOR 30 //converts ArtNet 0-255 to 0-(255*factor) counts/s
+/* Constants -----------------------------------------------------------*/
+#define ARTNET_PAN_TILT_SCALING_FACTOR_360   1 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 360 degrees
+#define ARTNET_PAN_TILT_SCALING_FACTOR_540   1.5 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 540 degrees
+#define ARTNET_PAN_TILT_SCALING_FACTOR(VEL_LIMIT) (VEL_LIMIT/256) //converts ArtNet 0-255 to 0-(255*factor)counts/s where the max value is the velocity limit
+#define ARTNET_VELOCITY_SCALING_FACTOR(VEL_LIMIT) (VEL_LIMIT/126) //converts ArtNet 2-127 or 130-255 to 0-(126*factor)counts/s where the max value is the velocity limit
 
+/* Functions------------------------------------------------------------*/
 void StormBreaker::serviceStormBreaker()
 {
-    Header.type = (StormBreaker::MessageType_t)pi_serial.read();
+    Header.type = (StormBreaker::MessageType_t)pi_serial.read(); //TODO: check if read returns -1 and then throw an error (do this for all occurrences)
     Header.size = pi_serial.read();
 
     #ifdef TESTING
@@ -30,6 +39,9 @@ void StormBreaker::serviceStormBreaker()
             receiveArtNetHead();
             serviceArtNetHead();
             break;
+        case IDENTIFY:
+            serviceIdentify();
+            break;
         default:
             break;
     }
@@ -37,7 +49,7 @@ void StormBreaker::serviceStormBreaker()
 
 void StormBreaker::receiveArtNetBody()
 {
-    while(pi_serial.available() < Header.size){}
+    while(pi_serial.available() < Header.size){} //TODO: add a timeout (do this for all occurrences)
     
     ArtNetBody.pan = (pi_serial.read() << 8) | pi_serial.read();
     ArtNetBody.pan_control = pi_serial.read();
@@ -82,7 +94,6 @@ void StormBreaker::receiveArtNetHead()
 void StormBreaker::serviceArtNetBody()
 {
     ArtNetPan();
-    ArtNetPanControl();
     ArtNetPanTiltSpeed();
     ArtNetPowerSpecialFunctions();
 }
@@ -94,24 +105,48 @@ void StormBreaker::serviceArtNetHead()
     ArtNetZoom();
     ArtNetFocus();
     ArtNetTilt();
-    ArtNetTiltControl();
     ArtNetPanTiltSpeed();
     ArtNetPowerSpecialFunctions();
 }
 
-void StormBreaker::ArtNetPan()
+void StormBreaker::serviceIdentify()
 {
-    odrive_.SetPosition(MOTOR_BODY, ArtNetBody.pan);
+    #ifdef BODY
+        pi_serial.println(IDENTIFIER);
+    #else
+        pi_serial.println(IDENTIFIER);
+    #endif
 }
 
-void StormBreaker::ArtNetPanControl()
+void StormBreaker::ArtNetPan()
 {
-
+    switch(ArtNetBody.pan_control){
+        case 0:
+            odrive_.SetControlModeTraj(AXIS_BODY);
+            odrive_.TrapezoidalMove(AXIS_BODY, ArtNetBody.pan * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+            break;
+        case 1:
+            odrive_.SetControlModeTraj(AXIS_BODY);
+            odrive_.TrapezoidalMove(AXIS_BODY, ArtNetBody.pan * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+            break;
+        case 128:
+            break;
+        case 129:
+            break;
+        default:
+            odrive_.SetControlModeVel(AXIS_BODY);
+            if((ArtNetBody.pan_control >= 2) && (ArtNetBody.pan_control <= 127)){
+                odrive_.SetVelocity(AXIS_BODY, (TRAJ_VEL_LIMIT - ((ArtNetBody.pan_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+            } else if((ArtNetBody.pan_control >= 130) && (ArtNetBody.pan_control <= 255)){
+                odrive_.SetVelocity(AXIS_BODY, (TRAJ_VEL_LIMIT - ((ArtNetBody.pan_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+            }
+            break;
+    }        
 }
 
 void StormBreaker::ArtNetStrobeShutter()
 {
-
+    //control shutter stepper motor
 }
 
 void StormBreaker::ArtNetIris()
@@ -131,25 +166,42 @@ void StormBreaker::ArtNetFocus()
 
 void StormBreaker::ArtNetTilt()
 {
-    odrive_.SetPosition(MOTOR_HEAD, ArtNetHead.tilt);
-}
-
-void StormBreaker::ArtNetTiltControl()
-{
-
+    switch(ArtNetHead.tilt_control){
+        case 0:
+            odrive_.TrapezoidalMove(AXIS_HEAD, ArtNetHead.tilt * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+            break;
+        case 1:
+            odrive_.TrapezoidalMove(AXIS_HEAD, ArtNetHead.tilt * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+            break;
+        case 128:
+            break;
+        case 129:
+            break;
+        default:
+            odrive_.SetControlModeVel(AXIS_HEAD);
+            if((ArtNetHead.tilt_control >= 2) && (ArtNetHead.tilt_control <= 127)){
+                odrive_.SetVelocity(AXIS_HEAD, (TRAJ_VEL_LIMIT - ((ArtNetHead.tilt_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+            } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
+                odrive_.SetVelocity(AXIS_HEAD, (TRAJ_VEL_LIMIT - ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+            }
+            break;
+    }    
 }
 
 void StormBreaker::ArtNetPanTiltSpeed()
 {
     #ifdef BODY
-        odrive_.ConfigureTrajVelLimit(MOTOR_BODY, (7650 - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SPEED_SCALING_FACTOR))); 
-        SerialUSB.println((7650 - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SPEED_SCALING_FACTOR)));
+        odrive_.ConfigureTrajVelLimit(AXIS_BODY, (TRAJ_VEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
     #else
-        odrive_.ConfigureTrajVelLimit(MOTOR_HEAD, (ArtNetHead.pan_tilt_speed * ARTNET_PAN_TILT_SPEED_SCALING_FACTOR));
+        odrive_.ConfigureTrajVelLimit(AXIS_HEAD, (TRAJ_VEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
     #endif
 }
 
 void StormBreaker::ArtNetPowerSpecialFunctions()
 {
+    #ifdef BODY
 
+    #else
+
+    #endif
 }

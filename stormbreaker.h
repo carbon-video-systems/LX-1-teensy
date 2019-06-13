@@ -1,12 +1,17 @@
 /* StormBreaker Header */
+
 #ifndef STORMBREAKER_H
 #define STORMBREAKER_H
 
+/* Includes-------------------------------------------------------------*/
 #include <stdint.h>
 
 #include "ODriveLib.h"
 #include "options.h"
 
+/* Constants -----------------------------------------------------------*/
+
+/* Functions------------------------------------------------------------*/
 class StormBreaker {
 public:
     StormBreaker(ODriveClass& odrive) : odrive_(odrive) {}
@@ -18,7 +23,8 @@ public:
         WARNING = -1,
         OK = 0,
         ARTNETBODY = 1,
-        ARTNETHEAD = 2
+        ARTNETHEAD = 2,
+        IDENTIFY = 99
     };
 
     struct Header_t {
@@ -51,14 +57,13 @@ private:
     void receiveArtNetHead();
     void serviceArtNetBody();
     void serviceArtNetHead();
+    void serviceIdentify();
     void ArtNetPan();
-    void ArtNetPanControl();
     void ArtNetStrobeShutter();
     void ArtNetIris();
     void ArtNetZoom();
     void ArtNetFocus();
     void ArtNetTilt();
-    void ArtNetTiltControl();
     void ArtNetPanTiltSpeed();
     void ArtNetPowerSpecialFunctions();
 };

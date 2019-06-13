@@ -7,6 +7,7 @@
 #include <Arduino.h>
 
 #include "calibration.h"
+#include "stormbreaker.h"
 
 /* Constants -----------------------------------------------------------*/
 // ODrive Limits
@@ -18,6 +19,11 @@
 #define MOTOR_TYPE          ODriveClass::MOTOR_TYPE_HIGH_CURRENT
 #define CPR                 8192    // counts/revolution
 #define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL
+
+// ODrive PID Calibration
+#define PID_POS_GAIN        50.0f
+#define PID_VEL_GAIN        0.0005f
+#define PID_VEL_INT_GAIN    0.0025f
 
 // ODrive startup settings
 #define STARTUP_MOTOR_CALIBRATION           false
@@ -58,11 +64,10 @@ void odrive_startup_sequence(ODriveClass& odrive){
                     encoder_calibrate(odrive, axis);
                     reconfigure_startup(odrive, axis);
                 }
-
             }
             else {
                 // FULL CALIBRATION SEQUENCE
-                set_axis_limits(odrive, axis);
+                parameter_configuration(odrive, axis);
                 motor_calibrate(odrive, axis);
                 encoder_calibrate(odrive, axis);
                 reconfigure_startup(odrive, axis);
@@ -197,11 +202,13 @@ void motor_calibrate(ODriveClass& odrive, int axis){
   * @param  int axis - axis to be configured
   * @return void
   */
-void set_axis_limits(ODriveClass& odrive, int axis){
+void parameter_configuration(ODriveClass& odrive, int axis){
     #ifdef TESTING
-        SerialUSB.print("Setting axis limits for axis ");
+        SerialUSB.print("Configuring parameters for axis ");
         SerialUSB.println(axis);
     #endif
+
+    odrive.SetControlModeTraj(axis);
 
     odrive.ConfigureBrakingResistance(BRAKING_RESISTANCE);
     odrive.ConfigureCurrentLimit(axis, CURRENT_LIM);
@@ -211,4 +218,12 @@ void set_axis_limits(ODriveClass& odrive, int axis){
     odrive.ConfigureMotorType(axis, MOTOR_TYPE);
     odrive.ConfigureCPR(axis, CPR);
     odrive.ConfigureEncoderMode(axis, ENCODER_MODE);
+
+    odrive.ConfigureTrajVelLimit(axis, TRAJ_VEL_LIMIT);
+    odrive.ConfigureTrajAccelLimit(axis, TRAJ_ACCEL_LIMIT);
+    odrive.ConfigureTrajDecelLimit(axis, TRAJ_DECEL_LIMIT);
+
+    odrive.ConfigurePosGain(axis, PID_POS_GAIN);
+    odrive.ConfigureVelGain(axis, PID_VEL_GAIN);
+    odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN);
 }

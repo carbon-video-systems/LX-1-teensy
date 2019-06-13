@@ -47,6 +47,15 @@ void ODriveClass::TrapezoidalMove(int motor_number, float position){
     serial_ << "t " << motor_number << " " << position << "\n";
 }
 
+// ODrive Control Mode Commands
+void ODriveClass::SetControlModeTraj(int axis) {
+    serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_TRAJECTORY_CONTROL << "\n";
+}
+
+void ODriveClass::SetControlModeVel(int axis) {
+    serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_VELOCITY_CONTROL << "\n";
+}
+
 // Motor configuration Commands
 int ODriveClass::MotorCalibrationStatus(int axis){
     serial_ << "r axis" << axis << ".motor.is_calibrated\n";
@@ -127,15 +136,28 @@ void ODriveClass::ConfigureEncoderMode(int axis, int mode){
 
 // Trajectory Limit Commands
 void ODriveClass::ConfigureTrajVelLimit(int axis, float velocity){
-    serial_ << "w axis" << axis << "trap_traj.config.vel_limit " << velocity << "\n";
+    serial_ << "w axis" << axis << ".trap_traj.config.vel_limit " << velocity << "\n";
 }
 
 void ODriveClass::ConfigureTrajAccelLimit(int axis, float acceleration){
-    serial_ << "w axis" << axis << "trap_traj.config.accel_limit " << acceleration << "\n";
+    serial_ << "w axis" << axis << ".trap_traj.config.accel_limit " << acceleration << "\n";
 }
 
 void ODriveClass::ConfigureTrajDecelLimit(int axis, float deceleration){
-    serial_ << "w axis" << axis << "trap_traj.config.decel_limit " << deceleration << "\n";
+    serial_ << "w axis" << axis << ".trap_traj.config.decel_limit " << deceleration << "\n";
+}
+
+// PID Calibration Commands
+void ODriveClass::ConfigurePosGain(int axis, float pos_gain){
+    serial_ << "w axis" << axis << ".controller.config.pos_gain " << pos_gain << "\n";
+}
+
+void ODriveClass::ConfigureVelGain(int axis, float vel_gain){
+    serial_ << "w axis" << axis << ".controller.config.vel_gain " << vel_gain << "\n";
+}
+
+void ODriveClass::ConfigureVelIntGain(int axis, float vel_int_gain){
+    serial_ << "w axis" << axis << ".controller.config.vel_integrator_gain " << vel_int_gain << "\n";
 }
 
 // System Configuration Commands
