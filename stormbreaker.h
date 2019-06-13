@@ -47,7 +47,6 @@ public:
 private:
     ODriveClass& odrive_;
 
-    void receiveStormBreaker();
     void receiveArtNetBody();
     void receiveArtNetHead();
     void serviceArtNetBody();

@@ -41,7 +41,7 @@
 #define odrive_serial   Serial1
 #define pi_serial       Serial2
 
-#define USB_SERIAL_BAUD     921600
+#define USB_SERIAL_BAUD     9600
 #define ODRIVE_SERIAL_BAUD  115200
 #define PI_SERIAL_BAUD      115200
 

@@ -4,7 +4,7 @@
 
 void StormBreaker::serviceStormBreaker()
 {
-    Header.type = (StormBreaker::MessageType_t)pi_serial.read(); //TODO: change this back to pi serial
+    Header.type = (StormBreaker::MessageType_t)pi_serial.read();
     Header.size = pi_serial.read();
 
     #ifdef TESTING
@@ -15,28 +15,6 @@ void StormBreaker::serviceStormBreaker()
         SerialUSB.println(Header.size);
     #endif
 
-    receiveStormBreaker();
-
-    switch(Header.type){
-        case ERROR:
-            break;
-        case WARNING:
-            break;
-        case OK:
-            break;
-        case ARTNETBODY:
-            serviceArtNetBody();
-            break;
-        case ARTNETHEAD:
-            serviceArtNetHead();
-            break;
-        default:
-            break;
-    }
-}
-
-void StormBreaker::receiveStormBreaker()
-{
     switch(Header.type){
         case ERROR:
             break;
@@ -46,9 +24,11 @@ void StormBreaker::receiveStormBreaker()
             break;
         case ARTNETBODY:
             receiveArtNetBody();
+            serviceArtNetBody();
             break;
         case ARTNETHEAD:
             receiveArtNetHead();
+            serviceArtNetHead();
             break;
         default:
             break;
@@ -57,7 +37,9 @@ void StormBreaker::receiveStormBreaker()
 
 void StormBreaker::receiveArtNetBody()
 {
-    ArtNetBody.pan = (pi_serial.read() << 8) & pi_serial.read();
+    while(pi_serial.available() < Header.size){}
+    
+    ArtNetBody.pan = (pi_serial.read() << 8) | pi_serial.read();
     ArtNetBody.pan_control = pi_serial.read();
     ArtNetBody.pan_tilt_speed = pi_serial.read();
     ArtNetBody.power_special_functions = pi_serial.read();
@@ -73,15 +55,17 @@ void StormBreaker::receiveArtNetBody()
 
 void StormBreaker::receiveArtNetHead()
 {
+    while(pi_serial.available() < Header.size){}
+
     ArtNetHead.strobe_shutter = pi_serial.read();
     ArtNetHead.iris = pi_serial.read();
-    ArtNetHead.zoom = (pi_serial.read() << 8) & pi_serial.read();
-    ArtNetHead.focus = (pi_serial.read() << 8) & pi_serial.read();
-    ArtNetHead.tilt = (pi_serial.read() << 8) & pi_serial.read();
+    ArtNetHead.zoom = (pi_serial.read() << 8) | pi_serial.read();
+    ArtNetHead.focus = (pi_serial.read() << 8) | pi_serial.read();
+    ArtNetHead.tilt = (pi_serial.read() << 8) | pi_serial.read();
     ArtNetHead.tilt_control = pi_serial.read();
     ArtNetHead.pan_tilt_speed = pi_serial.read();
     ArtNetHead.power_special_functions = pi_serial.read();
-
+    
     #ifdef TESTING
         SerialUSB.print("ArtNetHead packet: ");
         SerialUSB.print(ArtNetHead.strobe_shutter);
@@ -117,7 +101,7 @@ void StormBreaker::serviceArtNetHead()
 
 void StormBreaker::ArtNetPan()
 {
-    odrive_.TrapezoidalMove(MOTOR_BODY, ArtNetBody.pan);
+    odrive_.SetPosition(MOTOR_BODY, ArtNetBody.pan);
 }
 
 void StormBreaker::ArtNetPanControl()
@@ -147,7 +131,7 @@ void StormBreaker::ArtNetFocus()
 
 void StormBreaker::ArtNetTilt()
 {
-    odrive_.TrapezoidalMove(MOTOR_HEAD, ArtNetHead.tilt);
+    odrive_.SetPosition(MOTOR_HEAD, ArtNetHead.tilt);
 }
 
 void StormBreaker::ArtNetTiltControl()

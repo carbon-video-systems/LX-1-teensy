@@ -29,12 +29,12 @@ void setup()
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);
 
-    // Pi uses 921600 baud
-    pi_serial.begin(PI_SERIAL_BAUD);
+    // Pi uses 115200 baud, 8 data bits, 1 stop bit, no parity
+    pi_serial.begin(PI_SERIAL_BAUD, SERIAL_8N1);
     while(!odrive_serial);
 
     #ifdef TESTING
-        // USB uses 115200 baud
+        // USB uses 9600 baud
         SerialUSB.begin(USB_SERIAL_BAUD);
         while (!SerialUSB); // wait for Arduino Serial Monitor to open
     #endif
