@@ -5,6 +5,8 @@
 #include "calibration.h"
 
 /* Constants -----------------------------------------------------------*/
+#define MOTOR_ENCODER_COUNT 8192 //depends on the DIP switches inside the AMT102
+#define OUTER_ENCODER_COUNT 65536 //the counts per revolution of the motor encoder
 #define ARTNET_PAN_TILT_SCALING_FACTOR_360   1 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 360 degrees
 #define ARTNET_PAN_TILT_SCALING_FACTOR_540   1.5 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 540 degrees
 #define ARTNET_PAN_TILT_SCALING_FACTOR(VEL_LIMIT) (VEL_LIMIT/256) //converts ArtNet 0-255 to 0-(255*factor)counts/s where the max value is the velocity limit
@@ -59,8 +61,11 @@ void StormBreaker::receiveArtNetBody()
     #ifdef TESTING
         SerialUSB.print("ArtNetBody packet: ");
         SerialUSB.print(ArtNetBody.pan);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetBody.pan_control);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetBody.pan_tilt_speed);
+        SerialUSB.print(" ");
         SerialUSB.println(ArtNetBody.power_special_functions);
     #endif
 }
@@ -81,12 +86,19 @@ void StormBreaker::receiveArtNetHead()
     #ifdef TESTING
         SerialUSB.print("ArtNetHead packet: ");
         SerialUSB.print(ArtNetHead.strobe_shutter);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetHead.iris);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetHead.zoom);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetHead.focus);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetHead.tilt);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetHead.tilt_control);
+        SerialUSB.print(" ");
         SerialUSB.print(ArtNetHead.pan_tilt_speed);
+        SerialUSB.print(" ");
         SerialUSB.println(ArtNetHead.power_special_functions);
     #endif
 }
@@ -118,27 +130,35 @@ void StormBreaker::serviceIdentify()
     #endif
 }
 
+// Handles both pan and pan control functions
 void StormBreaker::ArtNetPan()
 {
     switch(ArtNetBody.pan_control){
-        case 0:
+        case 0: //pan with 540 range
             odrive_.SetControlModeTraj(AXIS_BODY);
-            odrive_.TrapezoidalMove(AXIS_BODY, ArtNetBody.pan * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+            //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
+            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
             break;
-        case 1:
+        case 1: //pan with 360 range
             odrive_.SetControlModeTraj(AXIS_BODY);
-            odrive_.TrapezoidalMove(AXIS_BODY, ArtNetBody.pan * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+            //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
+            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
             break;
-        case 128:
+        case 128: //stop in place
+            odrive_.SetVelocity(AXIS_BODY, 0); //TODO: investigate why motors are "looser" in this state
             break;
-        case 129:
+        case 129: //stop and return to index position
+            odrive_.SetControlModeTraj(AXIS_BODY); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
+            // odrive_.TrapezoidalMove(AXIS_BODY, 0);
             break;
-        default:
+        default: //continuous cw or ccw rotation
             odrive_.SetControlModeVel(AXIS_BODY);
             if((ArtNetBody.pan_control >= 2) && (ArtNetBody.pan_control <= 127)){
-                odrive_.SetVelocity(AXIS_BODY, (TRAJ_VEL_LIMIT - ((ArtNetBody.pan_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+                //scale based on the velocity limit
+                odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             } else if((ArtNetBody.pan_control >= 130) && (ArtNetBody.pan_control <= 255)){
-                odrive_.SetVelocity(AXIS_BODY, (TRAJ_VEL_LIMIT - ((ArtNetBody.pan_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+                //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
+                odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             }
             break;
     }        
@@ -164,28 +184,38 @@ void StormBreaker::ArtNetFocus()
     //control focus stepper motor
 }
 
+// Handles both tilt and tilt control functions
 void StormBreaker::ArtNetTilt()
 {
     switch(ArtNetHead.tilt_control){
-        case 0:
-            odrive_.TrapezoidalMove(AXIS_HEAD, ArtNetHead.tilt * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+        case 0: //tilt with 540 range
+            odrive_.SetControlModeTraj(AXIS_HEAD);
+            //offset by half a rotation (to allow for tilting in both directions) and scale for 540 degree range
+            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
             break;
-        case 1:
-            odrive_.TrapezoidalMove(AXIS_HEAD, ArtNetHead.tilt * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+        case 1: //pan with 360 range
+            odrive_.SetControlModeTraj(AXIS_HEAD);
+            //offset by half a rotation (to allow for tilting in both directions) and scale for 360 degree range
+            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
             break;
-        case 128:
+        case 128: //stop in place
+            odrive_.SetVelocity(AXIS_HEAD, 0); //TODO: investigate why motors are "looser" in this state
             break;
-        case 129:
+        case 129: //stop and return to index position
+            odrive_.SetControlModeTraj(AXIS_HEAD); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
+            // odrive_.TrapezoidalMove(AXIS_HEAD, 0);
             break;
-        default:
+        default: //continuous cw or ccw rotation
             odrive_.SetControlModeVel(AXIS_HEAD);
             if((ArtNetHead.tilt_control >= 2) && (ArtNetHead.tilt_control <= 127)){
-                odrive_.SetVelocity(AXIS_HEAD, (TRAJ_VEL_LIMIT - ((ArtNetHead.tilt_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+                //scale based on the velocity limit
+                odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
-                odrive_.SetVelocity(AXIS_HEAD, (TRAJ_VEL_LIMIT - ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+                //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
+                odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             }
             break;
-    }    
+    }        
 }
 
 void StormBreaker::ArtNetPanTiltSpeed()
