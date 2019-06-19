@@ -21,9 +21,13 @@
 #define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL
 
 // ODrive PID Calibration
-#define PID_POS_GAIN        50.0f
-#define PID_VEL_GAIN        0.0005f
-#define PID_VEL_INT_GAIN    0.0025f
+#define PID_POS_GAIN_BODY        20.0f       //default 20
+#define PID_VEL_GAIN_BODY        0.0005f     //default 0.0005
+#define PID_VEL_INT_GAIN_BODY    0.001f     //default 0.001
+
+#define PID_POS_GAIN_HEAD        50.0f       //default 20
+#define PID_VEL_GAIN_HEAD        0.0005f     //default 0.0005
+#define PID_VEL_INT_GAIN_HEAD    0.0025f     //default 0.001
 
 // ODrive startup settings
 #define STARTUP_MOTOR_CALIBRATION           false
@@ -223,7 +227,13 @@ void parameter_configuration(ODriveClass& odrive, int axis){
     odrive.ConfigureTrajAccelLimit(axis, TRAJ_ACCEL_LIMIT);
     odrive.ConfigureTrajDecelLimit(axis, TRAJ_DECEL_LIMIT);
 
-    odrive.ConfigurePosGain(axis, PID_POS_GAIN);
-    odrive.ConfigureVelGain(axis, PID_VEL_GAIN);
-    odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN);
+    if(axis == AXIS_BODY){
+        odrive.ConfigurePosGain(axis, PID_POS_GAIN_BODY);
+        odrive.ConfigureVelGain(axis, PID_VEL_GAIN_BODY);
+        odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_BODY);
+    } else if(axis == AXIS_HEAD){
+        odrive.ConfigurePosGain(axis, PID_POS_GAIN_HEAD);
+        odrive.ConfigureVelGain(axis, PID_VEL_GAIN_HEAD);
+        odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_HEAD);
+    }
 }

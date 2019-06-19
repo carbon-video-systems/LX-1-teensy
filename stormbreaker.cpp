@@ -123,9 +123,11 @@ void StormBreaker::serviceArtNetHead()
 
 void StormBreaker::serviceIdentify()
 {
-    #ifdef BODY
+    #if defined BODY
         pi_serial.println(IDENTIFIER);
-    #else
+    #elif defined HEAD
+        pi_serial.println(IDENTIFIER);
+    #elif defined BOTH_FOR_TESTING
         pi_serial.println(IDENTIFIER);
     #endif
 }
@@ -203,7 +205,7 @@ void StormBreaker::ArtNetTilt()
             //offset by half a rotation (to allow for tilting in both directions) and scale for 540 degree range
             odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
             break;
-        case 1: //pan with 360 range
+        case 1: //tilt with 360 range
             odrive_.SetControlModeTraj(AXIS_HEAD);
             //offset by half a rotation (to allow for tilting in both directions) and scale for 360 degree range
             odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
@@ -230,16 +232,17 @@ void StormBreaker::ArtNetTilt()
 
 void StormBreaker::ArtNetPanTiltSpeed()
 {
-    #ifdef BODY
+    #if defined BODY || defined BOTH_FOR_TESTING
         odrive_.ConfigureTrajVelLimit(AXIS_BODY, (TRAJ_VEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
-    #else
-        odrive_.ConfigureTrajVelLimit(AXIS_HEAD, (TRAJ_VEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+    #endif
+    #if defined HEAD || defined BOTH_FOR_TESTING
+        odrive_.ConfigureTrajVelLimit(AXIS_HEAD, (TRAJ_VEL_LIMIT - (ArtNetHead.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
     #endif
 }
 
 void StormBreaker::ArtNetPowerSpecialFunctions()
 {
-    #ifdef BODY
+    #if defined BODY || defined BOTH_FOR_TESTING
         if(ArtNetBody.power_special_functions == 1){
             //dimmer curve square
         } else if(ArtNetBody.power_special_functions == 2){
@@ -259,7 +262,8 @@ void StormBreaker::ArtNetPowerSpecialFunctions()
         } else if(ArtNetBody.power_special_functions == 9){
             //laser power on
         }
-    #else
+    #endif
+    #if defined HEAD || defined BOTH_FOR_TESTING
         if(ArtNetHead.power_special_functions == 1){
             //dimmer curve square
         } else if(ArtNetHead.power_special_functions == 2){

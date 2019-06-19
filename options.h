@@ -11,32 +11,32 @@
 /* Constants --------------------------------------------------------------------------------------*/
 /* Define TESTING during prototyping */
 #define TESTING
+
 #ifdef TESTING
     /* Testing specific stuff */
 #endif
 
-/* Define either BODY or HEAD but not both */
-#define BODY
+/* Define either BODY or HEAD for normal operation or BOTH_FOR_TESTING for testing purposes*/
+// #define BODY
 // #define HEAD
-#ifdef BODY
+#define BOTH_FOR_TESTING
+
+#if defined BODY
     /* Body specific stuff */
-    #define IDENTIFIER 0xAF
+    #define NUM_MOTORS      1
+    #define AXIS_BODY       0
+    #define IDENTIFIER      0xAF
 #elif defined HEAD
     /* Head specific stuff */
-    #define IDENTIFIER 0x50
-#endif
-
-/* Define ONE_MOTOR or TWO_MOTORS depending on the number of motors connected to a single ODrive */
-#define ONE_MOTOR
-// #define TWO_MOTORS   //this is primarily for testing purposes
-#ifdef ONE_MOTOR
     #define NUM_MOTORS      1
-    #define AXIS_BODY       1
     #define AXIS_HEAD       1
-#elif defined TWO_MOTORS
+    #define IDENTIFIER      0x50
+#elif defined BOTH_FOR_TESTING
+    /* Stuff that makes testing two motors on a single ODrive work properly */
     #define NUM_MOTORS      2
-    #define AXIS_BODY       1
-    #define AXIS_HEAD       0
+    #define AXIS_BODY       0
+    #define AXIS_HEAD       1
+    #define IDENTIFIER      0xB7
 #endif
 
 #define SerialUSB       Serial
