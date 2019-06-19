@@ -137,12 +137,12 @@ void StormBreaker::ArtNetPan()
         case 0: //pan with 540 range
             odrive_.SetControlModeTraj(AXIS_BODY);
             //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
-            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
             break;
         case 1: //pan with 360 range
             odrive_.SetControlModeTraj(AXIS_BODY);
             //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
-            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
             break;
         case 128: //stop in place
             odrive_.SetVelocity(AXIS_BODY, 0); //TODO: investigate why motors are "looser" in this state
@@ -166,7 +166,17 @@ void StormBreaker::ArtNetPan()
 
 void StormBreaker::ArtNetStrobeShutter()
 {
-    //control shutter stepper motor
+    if((ArtNetHead.strobe_shutter >= 0) && (ArtNetHead.strobe_shutter <= 19)){
+        //shutter closed
+    } else if((ArtNetHead.strobe_shutter >= 20) && (ArtNetHead.strobe_shutter <= 49)){
+        //shutter open
+    } else if((ArtNetHead.strobe_shutter >= 50) && (ArtNetHead.strobe_shutter <= 200)){
+        //strobe slow to fast
+    } else if((ArtNetHead.strobe_shutter >= 201) && (ArtNetHead.strobe_shutter <= 210)){
+        //shutter open
+    } else if((ArtNetHead.strobe_shutter >= 211) && (ArtNetHead.strobe_shutter <= 255)){
+        //random strobe slow to fast
+    }
 }
 
 void StormBreaker::ArtNetIris()
@@ -191,12 +201,12 @@ void StormBreaker::ArtNetTilt()
         case 0: //tilt with 540 range
             odrive_.SetControlModeTraj(AXIS_HEAD);
             //offset by half a rotation (to allow for tilting in both directions) and scale for 540 degree range
-            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
             break;
         case 1: //pan with 360 range
             odrive_.SetControlModeTraj(AXIS_HEAD);
             //offset by half a rotation (to allow for tilting in both directions) and scale for 360 degree range
-            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2 - 1)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
             break;
         case 128: //stop in place
             odrive_.SetVelocity(AXIS_HEAD, 0); //TODO: investigate why motors are "looser" in this state
@@ -215,7 +225,7 @@ void StormBreaker::ArtNetTilt()
                 odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             }
             break;
-    }        
+    }
 }
 
 void StormBreaker::ArtNetPanTiltSpeed()
@@ -230,8 +240,44 @@ void StormBreaker::ArtNetPanTiltSpeed()
 void StormBreaker::ArtNetPowerSpecialFunctions()
 {
     #ifdef BODY
-
+        if(ArtNetBody.power_special_functions == 1){
+            //dimmer curve square
+        } else if(ArtNetBody.power_special_functions == 2){
+            //dimmer curve inverse square
+        } else if(ArtNetBody.power_special_functions == 3){
+            //dimmer curve linear
+        } else if(ArtNetBody.power_special_functions == 4){
+            //dimmer curve S
+        } else if(ArtNetBody.power_special_functions == 5){
+            //blackout while pan/tilt on
+        } else if(ArtNetBody.power_special_functions == 6){
+            //blackout while pan/tilt off
+        } else if(ArtNetBody.power_special_functions == 7){
+            //fixture reset
+        } else if(ArtNetBody.power_special_functions == 8){
+            //laser power off
+        } else if(ArtNetBody.power_special_functions == 9){
+            //laser power on
+        }
     #else
-
+        if(ArtNetHead.power_special_functions == 1){
+            //dimmer curve square
+        } else if(ArtNetHead.power_special_functions == 2){
+            //dimmer curve inverse square
+        } else if(ArtNetHead.power_special_functions == 3){
+            //dimmer curve linear
+        } else if(ArtNetHead.power_special_functions == 4){
+            //dimmer curve S
+        } else if(ArtNetHead.power_special_functions == 5){
+            //blackout while pan/tilt on
+        } else if(ArtNetHead.power_special_functions == 6){
+            //blackout while pan/tilt off
+        } else if(ArtNetHead.power_special_functions == 7){
+            //fixture reset
+        } else if(ArtNetHead.power_special_functions == 8){
+            //laser power off
+        } else if(ArtNetHead.power_special_functions == 9){
+            //laser power on
+        }
     #endif
 }
