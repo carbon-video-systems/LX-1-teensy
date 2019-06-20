@@ -176,6 +176,10 @@ void ODriveClass::EraseConfiguration(void){
 
 void ODriveClass::Reboot(void){
     serial_ << "sb\n";
+    //need to restart serial comms after rebooting
+    delay(100);
+    odrive_serial.begin(ODRIVE_SERIAL_BAUD);
+    while(!odrive_serial);
 }
 
 float ODriveClass::readFloat() {

@@ -2,10 +2,10 @@
 #include <Arduino.h>
 
 #include "calibration.h"
+#include "debug.h"
 #include "ODriveLib.h"
 #include "options.h"
 #include "stormbreaker.h"
-
 
 /* Constants --------------------------------------------------------------------------------------*/
 
@@ -16,6 +16,7 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 /* Variables --------------------------------------------------------------------------------------*/
 ODriveClass odrive(odrive_serial);
 StormBreaker thor(odrive);
+Debug debugger(odrive);
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -57,6 +58,12 @@ void loop()
         // SerialUSB.println(pi_serial.read());
         thor.serviceStormBreaker();
     }
+
+    #ifdef TESTING
+        if(SerialUSB.available()){
+            debugger.serviceDebug();
+        }
+    #endif
 
     // delay(100);
 }

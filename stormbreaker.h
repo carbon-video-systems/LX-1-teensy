@@ -16,8 +16,6 @@ class StormBreaker {
 public:
     StormBreaker(ODriveClass& odrive) : odrive_(odrive) {}
 
-    void serviceStormBreaker();
-
     enum MessageType_t {
         ERROR = -2,
         WARNING = -1,
@@ -49,6 +47,8 @@ public:
         uint8_t pan_tilt_speed;
         uint8_t power_special_functions;
     } ArtNetHead;
+
+    void serviceStormBreaker();
 
 private:
     ODriveClass& odrive_;
