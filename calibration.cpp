@@ -80,12 +80,11 @@ void odrive_startup_sequence(ODriveClass& odrive)
         }
     
     #elif defined BODY || defined HEAD
-        int axis;
 
         #if defined BODY
-            axis = AXIS_BODY;
+            int axis = AXIS_BODY;
         #elif defined HEAD
-            axis = AXIS_HEAD;
+            int axis = AXIS_HEAD;
         #endif
 
         if (calibration_status[axis] == false){
@@ -174,14 +173,13 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
                 #endif
             }
         }
-        
+
     #elif defined BODY || defined HEAD
-        int axis;
 
         #if defined BODY
-            axis = AXIS_BODY;
+            int axis = AXIS_BODY;
         #elif defined HEAD
-            axis = AXIS_HEAD;
+            int axis = AXIS_HEAD;
         #endif
         
         do{

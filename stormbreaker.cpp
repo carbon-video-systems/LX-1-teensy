@@ -123,13 +123,7 @@ void StormBreaker::serviceArtNetHead()
 
 void StormBreaker::serviceIdentify()
 {
-    #if defined BODY
-        pi_serial.println(IDENTIFIER);
-    #elif defined HEAD
-        pi_serial.println(IDENTIFIER);
-    #elif defined BOTH_FOR_TESTING
-        pi_serial.println(IDENTIFIER);
-    #endif
+    pi_serial.println(IDENTIFIER);
 }
 
 // Handles both pan and pan control functions
