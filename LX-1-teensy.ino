@@ -32,7 +32,7 @@ void setup()
 
     // Pi uses 115200 baud, 8 data bits, 1 stop bit, no parity
     pi_serial.begin(PI_SERIAL_BAUD, SERIAL_8N1);
-    while(!odrive_serial);
+    while(!pi_serial);
 
     #ifdef TESTING
         // USB uses 9600 baud
@@ -42,7 +42,9 @@ void setup()
 
     odrive_startup_sequence(odrive);
 
-    pi_serial.println("Hi Raspberry Pi how are you today? :D");
+    #ifdef TESTING
+        pi_serial.println("Hi Raspberry Pi how are you today? :D");
+    #endif
 
     delay(100);
 }
