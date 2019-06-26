@@ -53,10 +53,11 @@ public:
 private:
     ODriveClass& odrive_;
 
+    // body functions
     void receiveArtNetBody();
     void serviceArtNetBody();
     void ArtNetPan();
-
+    // head functions
     void receiveArtNetHead();
     void serviceArtNetHead();
     void ArtNetStrobeShutter();
@@ -64,7 +65,7 @@ private:
     void ArtNetZoom();
     void ArtNetFocus();
     void ArtNetTilt();
-
+    // common functions
     void ArtNetPanTiltSpeed();
     void ArtNetPowerSpecialFunctions();
     void serviceIdentify();

@@ -84,38 +84,6 @@ void odrive_startup_sequence(ODriveClass& odrive)
                 }
             }
         }
-    
-    // #elif defined BODY || defined HEAD
-
-    //     #if defined BODY
-    //         int axis = AXIS_BODY;
-    //     #elif defined HEAD
-    //         int axis = AXIS_HEAD;
-    //     #endif
-
-    //     if (calibration_status[axis] == false){
-
-    //         #ifdef TESTING
-    //             SerialUSB.print("Configuring axis ");
-    //             SerialUSB.println(axis);
-    //         #endif
-
-    //         if (odrive.MotorCalibrationStatus(axis)){
-    //             if (odrive.EncoderReadyStatus(axis)){
-    //                 reconfigure_startup(odrive, axis);
-    //             } else {
-    //                 encoder_calibrate(odrive, axis);
-    //                 reconfigure_startup(odrive, axis);
-    //             }
-    //         } else {
-    //             // FULL CALIBRATION SEQUENCE
-    //             parameter_configuration(odrive, axis);
-    //             motor_calibrate(odrive, axis);
-    //             encoder_calibrate(odrive, axis);
-    //             reconfigure_startup(odrive, axis);
-    //         }
-    //     }
-    // #endif
 
     // save calibration and reboot if either axis needs reconfiguration
     if (!calibration_status[0] || !calibration_status[1]){
@@ -184,43 +152,6 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
                 #endif
             }
         }
-
-    // #elif defined BODY || defined HEAD
-
-    //     #if defined BODY
-    //         int axis = AXIS_BODY;
-    //     #elif defined HEAD
-    //         int axis = AXIS_HEAD;
-    //     #endif
-        
-    //     do{
-    //         current_state = odrive.readstate(axis);
-    //         delay(100);
-    //     } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
-
-    //     #ifdef TESTING
-    //         SerialUSB.print("ODrive ");
-    //         SerialUSB.print(axis);
-    //         SerialUSB.print(" state : ");;
-    //         SerialUSB.println(current_state);
-            
-    //         SerialUSB.print("Calibration status: ");
-    //     #endif
-
-    //     if (current_state == ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL){
-    //         calibration_status[axis] = true;
-
-    //         #ifdef TESTING
-    //             SerialUSB.println("calibrated");
-    //         #endif
-    //     } else {
-    //         calibration_status[axis] = false;
-            
-    //         #ifdef TESTING
-    //             SerialUSB.println("not calibrated");
-    //         #endif
-    //     }
-    // #endif
 
     return;
 }
