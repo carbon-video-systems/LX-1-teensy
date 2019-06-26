@@ -1,5 +1,6 @@
-#include "Arduino.h"
-#include "odrivelib.h"
+#include <Arduino.h>
+
+#include "ODriveLib.h"
 
 static const int kMotorOffsetFloat = 2;
 static const int kMotorStrideFloat = 28;
@@ -44,6 +45,15 @@ void ODriveClass::SetCurrent(int motor_number, float current) {
 
 void ODriveClass::TrapezoidalMove(int motor_number, float position){
     serial_ << "t " << motor_number << " " << position << "\n";
+}
+
+// ODrive Control Mode Commands
+void ODriveClass::SetControlModeTraj(int axis) {
+    serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_TRAJECTORY_CONTROL << "\n";
+}
+
+void ODriveClass::SetControlModeVel(int axis) {
+    serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_VELOCITY_CONTROL << "\n";
 }
 
 // Motor configuration Commands
@@ -124,6 +134,32 @@ void ODriveClass::ConfigureEncoderMode(int axis, int mode){
     serial_ << "w axis" << axis << ".encoder.config.mode " << mode << "\n";
 }
 
+// Trajectory Limit Commands
+void ODriveClass::ConfigureTrajVelLimit(int axis, float velocity){
+    serial_ << "w axis" << axis << ".trap_traj.config.vel_limit " << velocity << "\n";
+}
+
+void ODriveClass::ConfigureTrajAccelLimit(int axis, float acceleration){
+    serial_ << "w axis" << axis << ".trap_traj.config.accel_limit " << acceleration << "\n";
+}
+
+void ODriveClass::ConfigureTrajDecelLimit(int axis, float deceleration){
+    serial_ << "w axis" << axis << ".trap_traj.config.decel_limit " << deceleration << "\n";
+}
+
+// PID Calibration Commands
+void ODriveClass::ConfigurePosGain(int axis, float pos_gain){
+    serial_ << "w axis" << axis << ".controller.config.pos_gain " << pos_gain << "\n";
+}
+
+void ODriveClass::ConfigureVelGain(int axis, float vel_gain){
+    serial_ << "w axis" << axis << ".controller.config.vel_gain " << vel_gain << "\n";
+}
+
+void ODriveClass::ConfigureVelIntGain(int axis, float vel_int_gain){
+    serial_ << "w axis" << axis << ".controller.config.vel_integrator_gain " << vel_int_gain << "\n";
+}
+
 // System Configuration Commands
 float ODriveClass::BusVoltage(void){
     serial_ << "r vbus_voltage\n";
@@ -140,6 +176,10 @@ void ODriveClass::EraseConfiguration(void){
 
 void ODriveClass::Reboot(void){
     serial_ << "sb\n";
+    //need to restart serial comms after rebooting
+    delay(100);
+    odrive_serial.begin(ODRIVE_SERIAL_BAUD);
+    while(!odrive_serial);
 }
 
 float ODriveClass::readFloat() {

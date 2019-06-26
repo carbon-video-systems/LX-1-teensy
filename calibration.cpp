@@ -5,7 +5,9 @@
 
 /* Includes-------------------------------------------------------------*/
 #include <Arduino.h>
+
 #include "calibration.h"
+#include "stormbreaker.h"
 
 /* Constants -----------------------------------------------------------*/
 // ODrive Limits
@@ -17,6 +19,15 @@
 #define MOTOR_TYPE          ODriveClass::MOTOR_TYPE_HIGH_CURRENT
 #define CPR                 8192    // counts/revolution
 #define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL
+
+// ODrive PID Calibration
+#define PID_POS_GAIN_BODY        20.0f       //default 20
+#define PID_VEL_GAIN_BODY        0.0005f     //default 0.0005
+#define PID_VEL_INT_GAIN_BODY    0.001f     //default 0.001
+
+#define PID_POS_GAIN_HEAD        50.0f       //default 20
+#define PID_VEL_GAIN_HEAD        0.0005f     //default 0.0005
+#define PID_VEL_INT_GAIN_HEAD    0.0025f     //default 0.001
 
 // ODrive startup settings
 #define STARTUP_MOTOR_CALIBRATION           false
@@ -36,8 +47,8 @@
   * @param  ODriveClass& odrive - ODriveClass instantiated object
   * @return void
   */
-void odrive_startup_sequence(ODriveClass& odrive){
-
+void odrive_startup_sequence(ODriveClass& odrive)
+{
     bool calibration_status[NUM_MOTORS];
     odrive_startup_check(odrive, calibration_status);
 
@@ -52,16 +63,13 @@ void odrive_startup_sequence(ODriveClass& odrive){
             if (odrive.MotorCalibrationStatus(axis)){
                 if (odrive.EncoderReadyStatus(axis)){
                     reconfigure_startup(odrive, axis);
-                }
-                else{
+                } else {
                     encoder_calibrate(odrive, axis);
                     reconfigure_startup(odrive, axis);
                 }
-
-            }
-            else {
+            } else {
                 // FULL CALIBRATION SEQUENCE
-                set_axis_limits(odrive, axis);
+                parameter_configuration(odrive, axis);
                 motor_calibrate(odrive, axis);
                 encoder_calibrate(odrive, axis);
                 reconfigure_startup(odrive, axis);
@@ -91,8 +99,8 @@ void odrive_startup_sequence(ODriveClass& odrive){
   * @param  bool calibration_check [] to hold the calibration results
   * @return void
   */
-void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
-
+void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
+{
     #ifdef TESTING
         SerialUSB.println("Searching for and waiting for ODrive");
     #endif
@@ -121,8 +129,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
             #ifdef TESTING
                 SerialUSB.println("calibrated");
             #endif
-        }
-        else{
+        } else {
             calibration_status[axis] = false;
             
             #ifdef TESTING
@@ -130,6 +137,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
             #endif
         }
     }
+
     return;
 }
 
@@ -139,7 +147,8 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
   * @param  int axis - motor axis to be reconfigured
   * @return void
   */
-void reconfigure_startup(ODriveClass& odrive, int axis){
+void reconfigure_startup(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
         SerialUSB.print("Reconfiguring axis ");
         SerialUSB.print(axis);
@@ -159,7 +168,8 @@ void reconfigure_startup(ODriveClass& odrive, int axis){
   * @param  int axis - encoder axis to be calibrated
   * @return void
   */
-void encoder_calibrate(ODriveClass& odrive, int axis){
+void encoder_calibrate(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
         SerialUSB.print("Calibrating axis ");
         SerialUSB.print(axis);
@@ -179,7 +189,8 @@ void encoder_calibrate(ODriveClass& odrive, int axis){
   * @param  int axis - motor axis to be calibrated
   * @return void
   */
-void motor_calibrate(ODriveClass& odrive, int axis){
+void motor_calibrate(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
         SerialUSB.print("Calibrating axis ");
         SerialUSB.print(axis);
@@ -196,11 +207,14 @@ void motor_calibrate(ODriveClass& odrive, int axis){
   * @param  int axis - axis to be configured
   * @return void
   */
-void set_axis_limits(ODriveClass& odrive, int axis){
+void parameter_configuration(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
-        SerialUSB.print("Setting axis limits for axis ");
+        SerialUSB.print("Configuring parameters for axis ");
         SerialUSB.println(axis);
     #endif
+
+    odrive.SetControlModeTraj(axis);
 
     odrive.ConfigureBrakingResistance(BRAKING_RESISTANCE);
     odrive.ConfigureCurrentLimit(axis, CURRENT_LIM);
@@ -210,4 +224,18 @@ void set_axis_limits(ODriveClass& odrive, int axis){
     odrive.ConfigureMotorType(axis, MOTOR_TYPE);
     odrive.ConfigureCPR(axis, CPR);
     odrive.ConfigureEncoderMode(axis, ENCODER_MODE);
+
+    odrive.ConfigureTrajVelLimit(axis, TRAJ_VEL_LIMIT);
+    odrive.ConfigureTrajAccelLimit(axis, TRAJ_ACCEL_LIMIT);
+    odrive.ConfigureTrajDecelLimit(axis, TRAJ_DECEL_LIMIT);
+
+    if(axis == AXIS_BODY){
+        odrive.ConfigurePosGain(axis, PID_POS_GAIN_BODY);
+        odrive.ConfigureVelGain(axis, PID_VEL_GAIN_BODY);
+        odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_BODY);
+    } else if(axis == AXIS_HEAD){
+        odrive.ConfigurePosGain(axis, PID_POS_GAIN_HEAD);
+        odrive.ConfigureVelGain(axis, PID_VEL_GAIN_HEAD);
+        odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_HEAD);
+    }
 }

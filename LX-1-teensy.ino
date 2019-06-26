@@ -1,9 +1,11 @@
 /* Includes ---------------------------------------------------------------------------------------*/
 #include <Arduino.h>
-#include "options.h"
 
-#include "ODriveLib.h"
 #include "calibration.h"
+#include "debug.h"
+#include "ODriveLib.h"
+#include "options.h"
+#include "stormbreaker.h"
 
 /* Constants --------------------------------------------------------------------------------------*/
 
@@ -13,6 +15,8 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 
 /* Variables --------------------------------------------------------------------------------------*/
 ODriveClass odrive(odrive_serial);
+StormBreaker thor(odrive);
+Debug debugger(odrive);
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -20,18 +24,27 @@ ODriveClass odrive(odrive_serial);
  * @param   None
  * @return  None
  */
-void setup() {
+void setup()
+{
     // ODrive uses 115200 baud
-    odrive_serial.begin(115200);
+    odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);
 
+    // Pi uses 115200 baud, 8 data bits, 1 stop bit, no parity
+    pi_serial.begin(PI_SERIAL_BAUD, SERIAL_8N1);
+    while(!pi_serial);
+
     #ifdef TESTING
-        // Serial to PC
-        SerialUSB.begin(115200);
-        while (!Serial); // wait for Arduino Serial Monitor to open]
+        // USB uses 9600 baud
+        SerialUSB.begin(USB_SERIAL_BAUD);
+        while (!SerialUSB); // wait for Arduino Serial Monitor to open
     #endif
 
     odrive_startup_sequence(odrive);
+
+    #ifdef TESTING
+        pi_serial.println("Hi Raspberry Pi how are you today? :D");
+    #endif
 
     delay(100);
 }
@@ -41,6 +54,13 @@ void setup() {
  * @param   None
  * @return  None
  */
-void loop() {
-    delay(500);
+void loop()
+{
+    if(pi_serial.available())
+        thor.serviceStormBreaker();
+
+    #ifdef TESTING
+        if(SerialUSB.available())
+            debugger.serviceDebug();
+    #endif
 }

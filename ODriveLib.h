@@ -2,7 +2,8 @@
 #ifndef ODRIVELIB_H
 #define ODRIVELIB_H
 
-#include "Arduino.h"
+#include <Arduino.h>
+
 #include "options.h"
 
 class ODriveClass {
@@ -51,6 +52,10 @@ public:
     void SetCurrent(int motor_number, float current);
     void TrapezoidalMove(int motor_number, float position);
 
+    // Control Mode
+    void SetControlModeTraj(int axis);
+    void SetControlModeVel(int axis);
+
     // Motor Configuration Commands
     int MotorCalibrationStatus(int axis);
     void MotorPreCalibrated(int axis, bool request);
@@ -76,6 +81,16 @@ public:
     void ConfigureMotorType(int axis, int motor_type);
     void ConfigureCPR(int axis, int cpr);
     void ConfigureEncoderMode(int axis, int mode);
+
+    // Trajectory Limit Commands
+    void ConfigureTrajVelLimit(int axis, float velocity);
+    void ConfigureTrajAccelLimit(int axis, float acceleration);
+    void ConfigureTrajDecelLimit(int axis, float deceleration);
+
+    // PID Calibration Commands
+    void ConfigurePosGain(int axis, float pos_gain);
+    void ConfigureVelGain(int axis, float vel_gain);
+    void ConfigureVelIntGain(int axis, float vel_int_gain);
 
     // System Commands
     float BusVoltage(void);
