@@ -34,13 +34,19 @@ void StormBreaker::serviceStormBreaker()
     case OK:
         break;
     case ARTNETBODY:
-        receiveArtNetBody();
-        serviceArtNetBody();
+        #if defined BODY || defined BOTH_FOR_TESTING
+            receiveArtNetBody();
+            serviceArtNetBody();
+        #endif        
         break;
+
     case ARTNETHEAD:
-        receiveArtNetHead();
-        serviceArtNetHead();
+        #if defined HEAD || defined BOTH_FOR_TESTING
+            receiveArtNetHead();
+            serviceArtNetHead();
+        #endif
         break;
+
     case IDENTIFY:
         serviceIdentify();
         break;
@@ -49,6 +55,8 @@ void StormBreaker::serviceStormBreaker()
     }
 }
 
+#if defined BODY || defined BOTH_FOR_TESTING
+//
 void StormBreaker::receiveArtNetBody()
 {
     while(pi_serial.available() < Header.size){} //TODO: add a timeout (do this for all occurrences)
@@ -70,60 +78,11 @@ void StormBreaker::receiveArtNetBody()
     #endif
 }
 
-void StormBreaker::receiveArtNetHead()
-{
-    while(pi_serial.available() < Header.size){} //TODO: add a timeout (do this for all occurrences)
-
-    ArtNetHead.strobe_shutter = pi_serial.read();
-    ArtNetHead.iris = pi_serial.read();
-    ArtNetHead.zoom = (pi_serial.read() << 8) | pi_serial.read();
-    ArtNetHead.focus = (pi_serial.read() << 8) | pi_serial.read();
-    ArtNetHead.tilt = (pi_serial.read() << 8) | pi_serial.read();
-    ArtNetHead.tilt_control = pi_serial.read();
-    ArtNetHead.pan_tilt_speed = pi_serial.read();
-    ArtNetHead.power_special_functions = pi_serial.read();
-    
-    #ifdef TESTING
-        SerialUSB.print("ArtNetHead packet: ");
-        SerialUSB.print(ArtNetHead.strobe_shutter);
-        SerialUSB.print(" ");
-        SerialUSB.print(ArtNetHead.iris);
-        SerialUSB.print(" ");
-        SerialUSB.print(ArtNetHead.zoom);
-        SerialUSB.print(" ");
-        SerialUSB.print(ArtNetHead.focus);
-        SerialUSB.print(" ");
-        SerialUSB.print(ArtNetHead.tilt);
-        SerialUSB.print(" ");
-        SerialUSB.print(ArtNetHead.tilt_control);
-        SerialUSB.print(" ");
-        SerialUSB.print(ArtNetHead.pan_tilt_speed);
-        SerialUSB.print(" ");
-        SerialUSB.println(ArtNetHead.power_special_functions);
-    #endif
-}
-
 void StormBreaker::serviceArtNetBody()
 {
     ArtNetPan();
     ArtNetPanTiltSpeed();
     ArtNetPowerSpecialFunctions();
-}
-
-void StormBreaker::serviceArtNetHead()
-{
-    ArtNetStrobeShutter();
-    ArtNetIris();
-    ArtNetZoom();
-    ArtNetFocus();
-    ArtNetTilt();
-    ArtNetPanTiltSpeed();
-    ArtNetPowerSpecialFunctions();
-}
-
-void StormBreaker::serviceIdentify()
-{
-    pi_serial.println(IDENTIFIER);
 }
 
 // Handles both pan and pan control functions
@@ -158,6 +117,56 @@ void StormBreaker::ArtNetPan()
         }
         break;
     }        
+}
+
+//
+#endif
+
+
+#if defined HEAD || defined BOTH_FOR_TESTING
+//
+void StormBreaker::receiveArtNetHead()
+{
+    while(pi_serial.available() < Header.size){} //TODO: add a timeout (do this for all occurrences)
+
+    ArtNetHead.strobe_shutter = pi_serial.read();
+    ArtNetHead.iris = pi_serial.read();
+    ArtNetHead.zoom = (pi_serial.read() << 8) | pi_serial.read();
+    ArtNetHead.focus = (pi_serial.read() << 8) | pi_serial.read();
+    ArtNetHead.tilt = (pi_serial.read() << 8) | pi_serial.read();
+    ArtNetHead.tilt_control = pi_serial.read();
+    ArtNetHead.pan_tilt_speed = pi_serial.read();
+    ArtNetHead.power_special_functions = pi_serial.read();
+    
+    #ifdef TESTING
+        SerialUSB.print("ArtNetHead packet: ");
+        SerialUSB.print(ArtNetHead.strobe_shutter);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.iris);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.zoom);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.focus);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.tilt);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.tilt_control);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.pan_tilt_speed);
+        SerialUSB.print(" ");
+        SerialUSB.println(ArtNetHead.power_special_functions);
+    #endif
+}
+
+void StormBreaker::serviceArtNetHead()
+{
+    ArtNetStrobeShutter();
+    ArtNetIris();
+    ArtNetZoom();
+    ArtNetFocus();
+    ArtNetTilt();
+    ArtNetPanTiltSpeed();
+    ArtNetPowerSpecialFunctions();
 }
 
 void StormBreaker::ArtNetStrobeShutter()
@@ -223,6 +232,8 @@ void StormBreaker::ArtNetTilt()
         break;
     }
 }
+//
+#endif
 
 void StormBreaker::ArtNetPanTiltSpeed()
 {
@@ -257,6 +268,7 @@ void StormBreaker::ArtNetPowerSpecialFunctions()
             //laser power on
         }
     #endif
+
     #if defined HEAD || defined BOTH_FOR_TESTING
         if(ArtNetHead.power_special_functions == 1){
             //dimmer curve square
@@ -278,4 +290,9 @@ void StormBreaker::ArtNetPowerSpecialFunctions()
             //laser power on
         }
     #endif
+}
+
+void StormBreaker::serviceIdentify()
+{
+    pi_serial.println(IDENTIFIER);
 }

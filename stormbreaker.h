@@ -54,18 +54,20 @@ private:
     ODriveClass& odrive_;
 
     void receiveArtNetBody();
-    void receiveArtNetHead();
     void serviceArtNetBody();
-    void serviceArtNetHead();
-    void serviceIdentify();
     void ArtNetPan();
+
+    void receiveArtNetHead();
+    void serviceArtNetHead();
     void ArtNetStrobeShutter();
     void ArtNetIris();
     void ArtNetZoom();
     void ArtNetFocus();
     void ArtNetTilt();
+
     void ArtNetPanTiltSpeed();
     void ArtNetPowerSpecialFunctions();
+    void serviceIdentify();
 };
 
 #endif //STORMBREAKER_H
