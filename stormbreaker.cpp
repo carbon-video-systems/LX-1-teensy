@@ -27,25 +27,25 @@ void StormBreaker::serviceStormBreaker()
     #endif
 
     switch(Header.type){
-        case ERROR:
-            break;
-        case WARNING:
-            break;
-        case OK:
-            break;
-        case ARTNETBODY:
-            receiveArtNetBody();
-            serviceArtNetBody();
-            break;
-        case ARTNETHEAD:
-            receiveArtNetHead();
-            serviceArtNetHead();
-            break;
-        case IDENTIFY:
-            serviceIdentify();
-            break;
-        default:
-            break;
+    case ERROR:
+        break;
+    case WARNING:
+        break;
+    case OK:
+        break;
+    case ARTNETBODY:
+        receiveArtNetBody();
+        serviceArtNetBody();
+        break;
+    case ARTNETHEAD:
+        receiveArtNetHead();
+        serviceArtNetHead();
+        break;
+    case IDENTIFY:
+        serviceIdentify();
+        break;
+    default:
+        break;
     }
 }
 
@@ -72,7 +72,7 @@ void StormBreaker::receiveArtNetBody()
 
 void StormBreaker::receiveArtNetHead()
 {
-    while(pi_serial.available() < Header.size){}
+    while(pi_serial.available() < Header.size){} //TODO: add a timeout (do this for all occurrences)
 
     ArtNetHead.strobe_shutter = pi_serial.read();
     ArtNetHead.iris = pi_serial.read();
@@ -136,33 +136,33 @@ void StormBreaker::serviceIdentify()
 void StormBreaker::ArtNetPan()
 {
     switch(ArtNetBody.pan_control){
-        case 0: //pan with 540 range
-            odrive_.SetControlModeTraj(AXIS_BODY);
-            //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
-            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
-            break;
-        case 1: //pan with 360 range
-            odrive_.SetControlModeTraj(AXIS_BODY);
-            //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
-            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
-            break;
-        case 128: //stop in place
-            odrive_.SetVelocity(AXIS_BODY, 0); //TODO: investigate why motors are "looser" in this state
-            break;
-        case 129: //stop and return to index position
-            odrive_.SetControlModeTraj(AXIS_BODY); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
-            // odrive_.TrapezoidalMove(AXIS_BODY, 0);
-            break;
-        default: //continuous cw or ccw rotation
-            odrive_.SetControlModeVel(AXIS_BODY);
-            if((ArtNetBody.pan_control >= 2) && (ArtNetBody.pan_control <= 127)){
-                //scale based on the velocity limit
-                odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
-            } else if((ArtNetBody.pan_control >= 130) && (ArtNetBody.pan_control <= 255)){
-                //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
-                odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
-            }
-            break;
+    case 0: //pan with 540 range
+        odrive_.SetControlModeTraj(AXIS_BODY);
+        //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
+        odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+        break;
+    case 1: //pan with 360 range
+        odrive_.SetControlModeTraj(AXIS_BODY);
+        //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
+        odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+        break;
+    case 128: //stop in place
+        odrive_.SetVelocity(AXIS_BODY, 0); //TODO: investigate why motors are "looser" in this state
+        break;
+    case 129: //stop and return to index position
+        odrive_.SetControlModeTraj(AXIS_BODY); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
+        // odrive_.TrapezoidalMove(AXIS_BODY, 0);
+        break;
+    default: //continuous cw or ccw rotation
+        odrive_.SetControlModeVel(AXIS_BODY);
+        if((ArtNetBody.pan_control >= 2) && (ArtNetBody.pan_control <= 127)){
+            //scale based on the velocity limit
+            odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+        } else if((ArtNetBody.pan_control >= 130) && (ArtNetBody.pan_control <= 255)){
+            //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
+            odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+        }
+        break;
     }        
 }
 
@@ -200,33 +200,33 @@ void StormBreaker::ArtNetFocus()
 void StormBreaker::ArtNetTilt()
 {
     switch(ArtNetHead.tilt_control){
-        case 0: //tilt with 540 range
-            odrive_.SetControlModeTraj(AXIS_HEAD);
-            //offset by half a rotation (to allow for tilting in both directions) and scale for 540 degree range
-            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
-            break;
-        case 1: //tilt with 360 range
-            odrive_.SetControlModeTraj(AXIS_HEAD);
-            //offset by half a rotation (to allow for tilting in both directions) and scale for 360 degree range
-            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
-            break;
-        case 128: //stop in place
-            odrive_.SetVelocity(AXIS_HEAD, 0); //TODO: investigate why motors are "looser" in this state
-            break;
-        case 129: //stop and return to index position
-            odrive_.SetControlModeTraj(AXIS_HEAD); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
-            // odrive_.TrapezoidalMove(AXIS_HEAD, 0);
-            break;
-        default: //continuous cw or ccw rotation
-            odrive_.SetControlModeVel(AXIS_HEAD);
-            if((ArtNetHead.tilt_control >= 2) && (ArtNetHead.tilt_control <= 127)){
-                //scale based on the velocity limit
-                odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
-            } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
-                //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
-                odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
-            }
-            break;
+    case 0: //tilt with 540 range
+        odrive_.SetControlModeTraj(AXIS_HEAD);
+        //offset by half a rotation (to allow for tilting in both directions) and scale for 540 degree range
+        odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+        break;
+    case 1: //tilt with 360 range
+        odrive_.SetControlModeTraj(AXIS_HEAD);
+        //offset by half a rotation (to allow for tilting in both directions) and scale for 360 degree range
+        odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+        break;
+    case 128: //stop in place
+        odrive_.SetVelocity(AXIS_HEAD, 0); //TODO: investigate why motors are "looser" in this state
+        break;
+    case 129: //stop and return to index position
+        odrive_.SetControlModeTraj(AXIS_HEAD); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
+        // odrive_.TrapezoidalMove(AXIS_HEAD, 0);
+        break;
+    default: //continuous cw or ccw rotation
+        odrive_.SetControlModeVel(AXIS_HEAD);
+        if((ArtNetHead.tilt_control >= 2) && (ArtNetHead.tilt_control <= 127)){
+            //scale based on the velocity limit
+            odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+        } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
+            //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
+            odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+        }
+        break;
     }
 }
 

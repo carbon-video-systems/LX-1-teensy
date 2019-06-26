@@ -47,8 +47,8 @@
   * @param  ODriveClass& odrive - ODriveClass instantiated object
   * @return void
   */
-void odrive_startup_sequence(ODriveClass& odrive){
-
+void odrive_startup_sequence(ODriveClass& odrive)
+{
     bool calibration_status[NUM_MOTORS];
     odrive_startup_check(odrive, calibration_status);
 
@@ -63,13 +63,11 @@ void odrive_startup_sequence(ODriveClass& odrive){
             if (odrive.MotorCalibrationStatus(axis)){
                 if (odrive.EncoderReadyStatus(axis)){
                     reconfigure_startup(odrive, axis);
-                }
-                else{
+                } else {
                     encoder_calibrate(odrive, axis);
                     reconfigure_startup(odrive, axis);
                 }
-            }
-            else {
+            } else {
                 // FULL CALIBRATION SEQUENCE
                 parameter_configuration(odrive, axis);
                 motor_calibrate(odrive, axis);
@@ -101,8 +99,8 @@ void odrive_startup_sequence(ODriveClass& odrive){
   * @param  bool calibration_check [] to hold the calibration results
   * @return void
   */
-void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
-
+void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
+{
     #ifdef TESTING
         SerialUSB.println("Searching for and waiting for ODrive");
     #endif
@@ -131,8 +129,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
             #ifdef TESTING
                 SerialUSB.println("calibrated");
             #endif
-        }
-        else{
+        } else {
             calibration_status[axis] = false;
             
             #ifdef TESTING
@@ -140,6 +137,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
             #endif
         }
     }
+
     return;
 }
 
@@ -149,7 +147,8 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[]){
   * @param  int axis - motor axis to be reconfigured
   * @return void
   */
-void reconfigure_startup(ODriveClass& odrive, int axis){
+void reconfigure_startup(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
         SerialUSB.print("Reconfiguring axis ");
         SerialUSB.print(axis);
@@ -169,7 +168,8 @@ void reconfigure_startup(ODriveClass& odrive, int axis){
   * @param  int axis - encoder axis to be calibrated
   * @return void
   */
-void encoder_calibrate(ODriveClass& odrive, int axis){
+void encoder_calibrate(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
         SerialUSB.print("Calibrating axis ");
         SerialUSB.print(axis);
@@ -189,7 +189,8 @@ void encoder_calibrate(ODriveClass& odrive, int axis){
   * @param  int axis - motor axis to be calibrated
   * @return void
   */
-void motor_calibrate(ODriveClass& odrive, int axis){
+void motor_calibrate(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
         SerialUSB.print("Calibrating axis ");
         SerialUSB.print(axis);
@@ -206,7 +207,8 @@ void motor_calibrate(ODriveClass& odrive, int axis){
   * @param  int axis - axis to be configured
   * @return void
   */
-void parameter_configuration(ODriveClass& odrive, int axis){
+void parameter_configuration(ODriveClass& odrive, int axis)
+{
     #ifdef TESTING
         SerialUSB.print("Configuring parameters for axis ");
         SerialUSB.println(axis);

@@ -56,16 +56,11 @@ void setup()
  */
 void loop()
 {
-    if(pi_serial.available()){
-        // SerialUSB.println(pi_serial.read());
+    if(pi_serial.available())
         thor.serviceStormBreaker();
-    }
 
     #ifdef TESTING
-        if(SerialUSB.available()){
+        if(SerialUSB.available())
             debugger.serviceDebug();
-        }
     #endif
-
-    // delay(100);
 }
