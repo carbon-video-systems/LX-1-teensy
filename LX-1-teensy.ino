@@ -7,6 +7,18 @@
 #include "options.h"
 #include "stormbreaker.h"
 
+/*Errors---------------------------------------------------------------*/
+#if (!(((defined BODY) == (defined HEAD)) == (defined BOTH_FOR_TESTING))) || (defined BODY && defined HEAD)
+    #error Check your system settings in options.h!  Only one of BODY, HEAD, or BOTH_FOR_TESTING may be defined!
+#endif 
+
+#if defined BOTH_FOR_TESTING
+    #warning BOTH_FOR_TESTING is defined! Both motors will spin.  Do not flash this in production.
+#endif
+#if defined TESTING
+    #warning TESTING is defined! Do not flash this in production.
+#endif
+
 /* Constants --------------------------------------------------------------------------------------*/
 
 // Printing with stream operator
