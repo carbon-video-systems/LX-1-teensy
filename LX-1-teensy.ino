@@ -7,7 +7,7 @@
 #include "options.h"
 #include "stormbreaker.h"
 
-/*Errors---------------------------------------------------------------*/
+/*Errors-------------------------------------------------------------------------------------------*/
 #if (!(((defined BODY) == (defined HEAD)) == (defined BOTH_FOR_TESTING))) || (defined BODY && defined HEAD)
     #error Check your system settings in options.h!  Only one of BODY, HEAD, or BOTH_FOR_TESTING may be defined!
 #endif 
@@ -55,6 +55,7 @@ void setup()
     odrive_startup_sequence(odrive);
 
     #ifdef TESTING
+        SerialUSB.println("Hi computer, how are you today? :D");
         pi_serial.println("Hi Raspberry Pi how are you today? :D");
     #endif
 
