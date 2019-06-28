@@ -201,42 +201,43 @@ void StormBreaker::ArtNetStrobeShutter()
 void StormBreaker::ArtNetIris()
 {
     //control iris stepper motor
+    // constrain and map input to a range
 }
 
 void StormBreaker::ArtNetZoom()
 {
     //control zoom stepper motor
+    // constrain and map input to a range
 }
 
 void StormBreaker::ArtNetFocus()
 {
     //control focus stepper motor
+    // constrain and map input to a range
 }
 
 // Handles both tilt and tilt control functions
 void StormBreaker::ArtNetTilt()
 {
     switch(ArtNetHead.tilt_control){
-    case 0: //tilt with 540 range
+    case 0: //tilt with 270 range
         odrive_.SetControlModeTraj(AXIS_HEAD);
         //offset by half a rotation (to allow for tilting in both directions) and scale for 540 degree range
         odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_540);
         break;
-    case 1: //tilt with 360 range
-        odrive_.SetControlModeTraj(AXIS_HEAD);
-        //offset by half a rotation (to allow for tilting in both directions) and scale for 360 degree range
-        odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - (OUTER_ENCODER_COUNT / 2)) * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+    case 127: //stop in place
+        odrive_.SetVelocity(AXIS_HEAD, 0);
         break;
-    case 128: //stop in place
-        odrive_.SetVelocity(AXIS_HEAD, 0); //TODO: investigate why motors are "looser" in this state
-        break;
-    case 129: //stop and return to index position
+    case 128: //stop and return to index position
         odrive_.SetControlModeTraj(AXIS_HEAD); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
         // odrive_.TrapezoidalMove(AXIS_HEAD, 0);
         break;
+    case 129: //stop in place
+        odrive_.SetVelocity(AXIS_HEAD, 0); //TODO: investigate why motors are "looser" in this state
+        break;
     default: //continuous cw or ccw rotation
         odrive_.SetControlModeVel(AXIS_HEAD);
-        if((ArtNetHead.tilt_control >= 2) && (ArtNetHead.tilt_control <= 127)){
+        if((ArtNetHead.tilt_control >= 1) && (ArtNetHead.tilt_control <= 126)){
             //scale based on the velocity limit
             odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){

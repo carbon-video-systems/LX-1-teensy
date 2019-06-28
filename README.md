@@ -16,7 +16,6 @@ UART connection to an ODrive system.
 
 ## TODO
 Improve pan and tilt code. \
-Add iris, zoom, focus functionality. \
 Handle mode switch cases. \
-
 Handle override cases. \
+Handle do nothing cases.
