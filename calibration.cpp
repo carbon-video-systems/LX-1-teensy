@@ -1,6 +1,17 @@
-/* @file    calibration.cpp
- * @author  Carbon Video Systems LX-1
- * @description   O-drive calibration script
+/*
+ * Calibration Source
+ *
+ * @file    calibration.cpp
+ * @author  Carbon Video Systems 2019
+ * @description   O=Drive calibration script.
+ * This file reads the current state of the ODrive system
+ * and calibrates the motors if required.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
  */
 
 /* Includes-------------------------------------------------------------*/
@@ -112,7 +123,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
     #ifdef TESTING
         SerialUSB.println("Searching for and waiting for ODrive");
     #endif
-    
+
     int32_t current_state;
     // search for post-startup ODrive
 
@@ -134,7 +145,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
                 SerialUSB.print(axis);
                 SerialUSB.print(" state : ");;
                 SerialUSB.println(current_state);
-                
+
                 SerialUSB.print("Calibration status: ");
             #endif
 
@@ -146,7 +157,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
                 #endif
             } else {
                 calibration_status[axis] = false;
-                
+
                 #ifdef TESTING
                     SerialUSB.println("not calibrated");
                 #endif
@@ -249,7 +260,7 @@ void parameter_configuration(ODriveClass& odrive, int axis)
             odrive.ConfigurePosGain(axis, PID_POS_GAIN_BODY);
             odrive.ConfigureVelGain(axis, PID_VEL_GAIN_BODY);
             odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_BODY);
-        } 
+        }
     #elif defined HEAD || defined BOTH_FOR_TESTING
         if(axis == AXIS_HEAD){
             odrive.ConfigurePosGain(axis, PID_POS_GAIN_HEAD);

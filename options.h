@@ -1,4 +1,18 @@
-/* Options Header */
+/*
+ * Options Header
+ *
+ * @file    options.h
+ * @author  Carbon Video Systems 2019
+ * @description   The main header where preprocessor directives and
+ * system settings and variables are housed.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
+
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
@@ -43,7 +57,7 @@
 #define odrive_serial   Serial1
 #define pi_serial       Serial2
 
-#define USB_SERIAL_BAUD     9600
+#define USB_SERIAL_BAUD     115200
 #define ODRIVE_SERIAL_BAUD  115200
 #define PI_SERIAL_BAUD      115200
 

@@ -1,4 +1,18 @@
-/* StormBreaker Source */
+/*
+ * StormBreaker Source
+ *
+ * @file    stormbreaker.cpp
+ * @author  Carbon Video Systems 2019
+ * @description   StormBreaker Communication Protocol Framework.
+ * Sets the framework of the stormbreaker protocol, both reception and
+ * transmission.  This file also services received StormBreaker packets.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
 
 /* Includes-------------------------------------------------------------*/
 #include "stormbreaker.h"
@@ -37,7 +51,7 @@ void StormBreaker::serviceStormBreaker()
         #if defined BODY || defined BOTH_FOR_TESTING
             receiveArtNetBody();
             serviceArtNetBody();
-        #endif        
+        #endif
         break;
 
     case ARTNETHEAD:
@@ -60,7 +74,7 @@ void StormBreaker::serviceStormBreaker()
 void StormBreaker::receiveArtNetBody()
 {
     while(pi_serial.available() < Header.size){} //TODO: add a timeout (do this for all occurrences)
-    
+
     ArtNetBody.pan = (pi_serial.read() << 8) | pi_serial.read();
     ArtNetBody.pan_control = pi_serial.read();
     ArtNetBody.pan_tilt_speed = pi_serial.read();
@@ -116,7 +130,7 @@ void StormBreaker::ArtNetPan()
             odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         }
         break;
-    }        
+    }
 }
 
 //
@@ -137,7 +151,7 @@ void StormBreaker::receiveArtNetHead()
     ArtNetHead.tilt_control = pi_serial.read();
     ArtNetHead.pan_tilt_speed = pi_serial.read();
     ArtNetHead.power_special_functions = pi_serial.read();
-    
+
     #ifdef TESTING
         SerialUSB.print("ArtNetHead packet: ");
         SerialUSB.print(ArtNetHead.strobe_shutter);
