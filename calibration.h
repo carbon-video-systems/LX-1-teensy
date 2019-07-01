@@ -41,4 +41,9 @@ void encoder_calibrate(ODriveClass&, int);
 void motor_calibrate(ODriveClass&, int);
 void parameter_configuration(ODriveClass&, int);
 
+void lx1_startup_sequence(ODriveClass&);
+void startup_homing(ODriveClass&, int);
+
+void homing_system(ODriveClass&, int);
+
 #endif //CALIBRATION_H

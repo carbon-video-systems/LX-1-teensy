@@ -271,11 +271,46 @@ void parameter_configuration(ODriveClass& odrive, int axis)
 }
 
 /**
-  * @brief  Homes the odrive
+  * @brief  LX1 system startup homing sequence
+  * @param  ODriveClass& odrive - ODriveClass instantiated object
+  * @return void
+  */
+void lx1_startup_sequence(ODriveClass& odrive){
+    // Homing the odrive system
+    #if defined BODY || defined BOTH_FOR_TESTING
+        startup_homing(odrive, AXIS_BODY);
+    #endif
+
+    #if defined HEAD || defined BOTH_FOR_TESTING
+        startup_homing(odrive, AXIS_HEAD);
+    #endif
+}
+
+/**
+  * @brief  Homes one system axis on startup
+  * @param  ODriveClass& odrive - ODriveClass instantiated object
+  * @param  int axis - axis to be configured
+  * @return void
+  */
+ void startup_homing(ODriveClass& odrive, int axis){
+     delayMicroseconds(4);
+     // traj control mode?
+     // move to 0
+     // delay
+     // read encoder
+     // do math for encoder position
+ }
+
+/**
+  * @brief  Homes one system axis
   * @param  ODriveClass& odrive - ODriveClass instantiated object
   * @param  int axis - axis to be configured
   * @return void
   */
  void homing_system(ODriveClass& odrive, int axis){
-
+     // traj control mode?
+     // move to 0
+     // delay
+     // read encoder
+     // do math for encoder position
  }
