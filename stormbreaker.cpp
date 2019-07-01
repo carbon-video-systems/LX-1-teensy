@@ -229,8 +229,12 @@ void StormBreaker::ArtNetTilt()
         odrive_.SetVelocity(AXIS_HEAD, 0);
         break;
     case 128: //stop and return to index position
+        odrive_.SetVelocity(AXIS_HEAD, 0);
+        // read counter value
+        // read encoder position
+        // calculate new zero
         odrive_.SetControlModeTraj(AXIS_HEAD); //TODO: investigate why setting this mode causes the motors to spin to the index position at max speed
-        // odrive_.TrapezoidalMove(AXIS_HEAD, 0);
+        // odrive_.TrapezoidalMove(AXIS_HEAD, 0); // spin to closet index position
         break;
     case 129: //stop in place
         odrive_.SetVelocity(AXIS_HEAD, 0); //TODO: investigate why motors are "looser" in this state
