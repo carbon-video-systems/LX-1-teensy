@@ -22,8 +22,8 @@
 #define MOTOR_ENCODER_COUNT CPR //depends on the DIP switches inside the AMT102
 #define PAN_TILT_COUNT_MAXIMUM 65536 //2 byte resolution for pan/tilt control
 #define PAN_TILT_COUNT_MIDPOINT 32768 //half of the 2 byte resolution
-#define PAN_TILT_SCALING_FACTOR MOTOR_ENCODER_COUNT/PAN_TILT_COUNT_MAXIMUM
-#define TENSION_SCALING_FACTOR  8   // scaling factor between one motor revolution and one system revolution
+#define PAN_TILT_SCALING_FACTOR 8    // MOTOR_ENCODER_COUNT/PAN_TILT_COUNT_MAXIMUM
+#define TENSION_SCALING_FACTOR  1   // scaling factor between one motor revolution and one system revolution
 
 #define ARTNET_PAN_TILT_SCALING_FACTOR_270   0.75 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 270 degrees
 #define ARTNET_PAN_TILT_SCALING_FACTOR_360   1 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 360 degrees
@@ -112,12 +112,12 @@ void StormBreaker::ArtNetPan()
     case 0: //pan with 540 range
         odrive_.SetControlModeTraj(AXIS_BODY);
         //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
-        odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) * PAN_TILT_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540);
+        odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540);
         break;
     case 1: //pan with 360 range
         odrive_.SetControlModeTraj(AXIS_BODY);
         //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
-        odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) * PAN_TILT_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_360);
+        odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_360);
         break;
     case 128: //stop in place
         odrive_.SetVelocity(AXIS_BODY, 0); //TODO: investigate why motors are "looser" in this state
@@ -129,11 +129,11 @@ void StormBreaker::ArtNetPan()
     default: //continuous cw or ccw rotation
         odrive_.SetControlModeVel(AXIS_BODY);
         if((ArtNetBody.pan_control >= 2) && (ArtNetBody.pan_control <= 127)){
-            //scale based on the velocity limit
+            //scale based on the velocity limit CW
             odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         } else if((ArtNetBody.pan_control >= 130) && (ArtNetBody.pan_control <= 255)){
-            //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
-            odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+            //scale based on the velocity limit CCW
+            odrive_.SetVelocity(AXIS_BODY, (-VEL_VEL_LIMIT + ((ArtNetBody.pan_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         }
         break;
     }
@@ -229,7 +229,7 @@ void StormBreaker::ArtNetTilt()
     case 0: //tilt with 270 range
         odrive_.SetControlModeTraj(AXIS_HEAD);
         //offset by half a rotation (to allow for tilting in both directions) and scale for 270 degree range
-        odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - PAN_TILT_COUNT_MIDPOINT) * ARTNET_PAN_TILT_SCALING_FACTOR_270);
+        odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_270);
         break;
     case 127: //stop in place
         odrive_.SetVelocity(AXIS_HEAD, 0);
