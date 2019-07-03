@@ -1,3 +1,19 @@
+/*
+ * LX-1-teensy Source
+ *
+ * @file    LX-1-teensy.ino
+ * @author  Carbon Video Systems 2019
+ * @description   The main file used to receive, transmit, and service
+ * the StormBreaker protocol.  In addition, this file is the staging ground
+ * for calibrating and communicating with an ODrive System.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
+
 /* Includes ---------------------------------------------------------------------------------------*/
 #include <Arduino.h>
 
@@ -6,6 +22,18 @@
 #include "ODriveLib.h"
 #include "options.h"
 #include "stormbreaker.h"
+
+/*Errors-------------------------------------------------------------------------------------------*/
+#if (!(((defined BODY) == (defined HEAD)) == (defined BOTH_FOR_TESTING))) || (defined BODY && defined HEAD)
+    #error Check your system settings in options.h!  Only one of BODY, HEAD, or BOTH_FOR_TESTING may be defined!
+#endif
+
+#if defined BOTH_FOR_TESTING
+    #warning BOTH_FOR_TESTING is defined! Both motors will spin.  Do not flash this in production.
+#endif
+#if defined TESTING
+    #warning TESTING is defined! Do not flash this in production.
+#endif
 
 /* Constants --------------------------------------------------------------------------------------*/
 
@@ -43,6 +71,7 @@ void setup()
     odrive_startup_sequence(odrive);
 
     #ifdef TESTING
+        SerialUSB.println("Hi computer, how are you today? :D");
         pi_serial.println("Hi Raspberry Pi how are you today? :D");
     #endif
 

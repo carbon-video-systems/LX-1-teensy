@@ -1,6 +1,17 @@
-/* @file    calibration.cpp
- * @author  Carbon Video Systems LX-1
- * @description   O-drive calibration script
+/*
+ * Calibration Source
+ *
+ * @file    calibration.cpp
+ * @author  Carbon Video Systems 2019
+ * @description   O=Drive calibration script.
+ * This file reads the current state of the ODrive system
+ * and calibrates the motors if required.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
  */
 
 /* Includes-------------------------------------------------------------*/
@@ -49,36 +60,44 @@
   */
 void odrive_startup_sequence(ODriveClass& odrive)
 {
-    bool calibration_status[NUM_MOTORS];
+    bool calibration_status[2] = {true, true};
+
     odrive_startup_check(odrive, calibration_status);
 
-    for (int axis = 0; axis < NUM_MOTORS; axis ++){
-        if (calibration_status[axis] == false){
+    #if defined BOTH_FOR_TESTING
+        for (int axis = 0; axis < NUM_MOTORS; axis++) {
+    #elif defined BODY
+        for (int axis = AXIS_BODY; axis < (NUM_MOTORS + AXIS_BODY); axis++) {
+    #elif defined HEAD
+        for (int axis = AXIS_HEAD; axis < (NUM_MOTORS + AXIS_HEAD); axis++) {
+    #endif
 
-            #ifdef TESTING
-                SerialUSB.print("Configuring axis ");
-                SerialUSB.println(axis);
-            #endif
+            if (calibration_status[axis] == false){
 
-            if (odrive.MotorCalibrationStatus(axis)){
-                if (odrive.EncoderReadyStatus(axis)){
-                    reconfigure_startup(odrive, axis);
+                #ifdef TESTING
+                    SerialUSB.print("Configuring axis ");
+                    SerialUSB.println(axis);
+                #endif
+
+                if (odrive.MotorCalibrationStatus(axis)){
+                    if (odrive.EncoderReadyStatus(axis)){
+                        reconfigure_startup(odrive, axis);
+                    } else {
+                        encoder_calibrate(odrive, axis);
+                        reconfigure_startup(odrive, axis);
+                    }
                 } else {
+                    // FULL CALIBRATION SEQUENCE
+                    parameter_configuration(odrive, axis);
+                    motor_calibrate(odrive, axis);
                     encoder_calibrate(odrive, axis);
                     reconfigure_startup(odrive, axis);
                 }
-            } else {
-                // FULL CALIBRATION SEQUENCE
-                parameter_configuration(odrive, axis);
-                motor_calibrate(odrive, axis);
-                encoder_calibrate(odrive, axis);
-                reconfigure_startup(odrive, axis);
             }
         }
-    }
 
     // save calibration and reboot if either axis needs reconfiguration
-    if (!calibration_status[0] || !calibration_status[NUM_MOTORS -1]){
+    if (!calibration_status[0] || !calibration_status[1]){
         #ifdef TESTING
             SerialUSB.println("Saving calibration and rebooting");
         #endif
@@ -104,39 +123,46 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
     #ifdef TESTING
         SerialUSB.println("Searching for and waiting for ODrive");
     #endif
-    
+
     int32_t current_state;
     // search for post-startup ODrive
-    for (int axis = 0; axis < NUM_MOTORS; axis++) {
 
-        do {
-            current_state = odrive.readState(axis);
-            delay(100);
-        } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
+    #if defined BOTH_FOR_TESTING
+        for (int axis = 0; axis < NUM_MOTORS; axis++) {
+    #elif defined BODY
+        for (int axis = AXIS_BODY; axis < (NUM_MOTORS + AXIS_BODY); axis++) {
+    #elif defined HEAD
+        for (int axis = AXIS_HEAD; axis < (NUM_MOTORS + AXIS_HEAD); axis++) {
+    #endif
 
-        #ifdef TESTING
-            SerialUSB.print("ODrive ");
-            SerialUSB.print(axis);
-            SerialUSB.print(" state : ");;
-            SerialUSB.println(current_state);
-            
-            SerialUSB.print("Calibration status: ");
-        #endif
-
-        if (current_state == ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL){
-            calibration_status[axis] = true;
+            do {
+                current_state = odrive.readState(axis);
+                delay(100);
+            } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
 
             #ifdef TESTING
-                SerialUSB.println("calibrated");
+                SerialUSB.print("ODrive ");
+                SerialUSB.print(axis);
+                SerialUSB.print(" state : ");;
+                SerialUSB.println(current_state);
+
+                SerialUSB.print("Calibration status: ");
             #endif
-        } else {
-            calibration_status[axis] = false;
-            
-            #ifdef TESTING
-                SerialUSB.println("not calibrated");
-            #endif
+
+            if (current_state == ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL){
+                calibration_status[axis] = true;
+
+                #ifdef TESTING
+                    SerialUSB.println("calibrated");
+                #endif
+            } else {
+                calibration_status[axis] = false;
+
+                #ifdef TESTING
+                    SerialUSB.println("not calibrated");
+                #endif
+            }
         }
-    }
 
     return;
 }
@@ -229,13 +255,17 @@ void parameter_configuration(ODriveClass& odrive, int axis)
     odrive.ConfigureTrajAccelLimit(axis, TRAJ_ACCEL_LIMIT);
     odrive.ConfigureTrajDecelLimit(axis, TRAJ_DECEL_LIMIT);
 
-    if(axis == AXIS_BODY){
-        odrive.ConfigurePosGain(axis, PID_POS_GAIN_BODY);
-        odrive.ConfigureVelGain(axis, PID_VEL_GAIN_BODY);
-        odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_BODY);
-    } else if(axis == AXIS_HEAD){
-        odrive.ConfigurePosGain(axis, PID_POS_GAIN_HEAD);
-        odrive.ConfigureVelGain(axis, PID_VEL_GAIN_HEAD);
-        odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_HEAD);
-    }
+    #if defined BODY || defined BOTH_FOR_TESTING
+        if(axis == AXIS_BODY){
+            odrive.ConfigurePosGain(axis, PID_POS_GAIN_BODY);
+            odrive.ConfigureVelGain(axis, PID_VEL_GAIN_BODY);
+            odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_BODY);
+        }
+    #elif defined HEAD || defined BOTH_FOR_TESTING
+        if(axis == AXIS_HEAD){
+            odrive.ConfigurePosGain(axis, PID_POS_GAIN_HEAD);
+            odrive.ConfigureVelGain(axis, PID_VEL_GAIN_HEAD);
+            odrive.ConfigureVelIntGain(axis, PID_VEL_INT_GAIN_HEAD);
+        }
+    #endif
 }

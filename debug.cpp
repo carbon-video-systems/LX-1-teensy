@@ -1,4 +1,16 @@
-/* Debug Source */
+/*
+ * Debugger Source
+ *
+ * @file    debug.cpp
+ * @author  Carbon Video Systems 2019
+ * @description   Debugging the Teensy/ODrive system over serial connection.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
 
 /* Includes-------------------------------------------------------------*/
 #include "calibration.h"

@@ -1,4 +1,19 @@
-/* Calibration Header */
+/*
+ * Calibration Header
+ *
+ * @file    calibration.h
+ * @author  Carbon Video Systems 2019
+ * @description   O=Drive calibration script.
+ * This file reads the current state of the ODrive system
+ * and calibrates the motors if required.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
+
 #ifndef CALIBRATION_H
 #define CALIBRATION_H
 

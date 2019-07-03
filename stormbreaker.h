@@ -1,4 +1,18 @@
-/* StormBreaker Header */
+/*
+ * StormBreaker Header
+ *
+ * @file    stormbreaker.h
+ * @author  Carbon Video Systems 2019
+ * @description   StormBreaker Communication Protocol Framework.
+ * Sets the framework of the stormbreaker protocol, both reception and
+ * transmission.  This file also services received StormBreaker packets.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
 
 #ifndef STORMBREAKER_H
 #define STORMBREAKER_H
@@ -53,19 +67,22 @@ public:
 private:
     ODriveClass& odrive_;
 
+    // body functions
     void receiveArtNetBody();
-    void receiveArtNetHead();
     void serviceArtNetBody();
-    void serviceArtNetHead();
-    void serviceIdentify();
     void ArtNetPan();
+    // head functions
+    void receiveArtNetHead();
+    void serviceArtNetHead();
     void ArtNetStrobeShutter();
     void ArtNetIris();
     void ArtNetZoom();
     void ArtNetFocus();
     void ArtNetTilt();
+    // common functions
     void ArtNetPanTiltSpeed();
     void ArtNetPowerSpecialFunctions();
+    void serviceIdentify();
 };
 
 #endif //STORMBREAKER_H
