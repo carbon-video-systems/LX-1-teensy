@@ -81,6 +81,11 @@ public:
         ENCODER_MODE_HALL = 1
     };
 
+    struct Feedback_t {
+        float position;
+        float velocity;
+    } Feedback;
+
     ODriveClass(Stream& serial);
 
     // Commands
@@ -91,6 +96,7 @@ public:
     void SetVelocity(int motor_number, float velocity, float current_feedforward);
     void SetCurrent(int motor_number, float current);
     void TrapezoidalMove(int motor_number, float position);
+    Feedback_t ReadFeedback(int motor_number);
 
     // Control Mode
     void SetControlModeTraj(int axis);

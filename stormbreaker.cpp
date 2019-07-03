@@ -248,10 +248,10 @@ void StormBreaker::ArtNetTilt()
     default: //continuous cw or ccw rotation
         odrive_.SetControlModeVel(AXIS_HEAD);
         if((ArtNetHead.tilt_control >= 1) && (ArtNetHead.tilt_control <= 126)){
-            //scale based on the velocity limit
+            //scale based on the velocity limit CW
             odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
-            //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
+            //scale based on the velocity limit CCW
             odrive_.SetVelocity(AXIS_HEAD, (-VEL_VEL_LIMIT + ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         }
         break;

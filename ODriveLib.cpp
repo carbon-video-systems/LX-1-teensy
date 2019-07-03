@@ -88,6 +88,13 @@ void ODriveClass::TrapezoidalMove(int motor_number, float position){
     serial_ << "t " << motor_number << " " << position << "\n";
 }
 
+ODriveClass::Feedback_t ODriveClass::ReadFeedback(int motor_number){
+    serial_ << "f " << motor_number << "\n";
+    Feedback.position = readFloat();
+    Feedback.velocity = readFloat();
+    return Feedback;
+}
+
 // ODrive Control Mode Commands
 void ODriveClass::SetControlModeTraj(int axis) {
     serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_TRAJECTORY_CONTROL << "\n";
@@ -201,7 +208,7 @@ void ODriveClass::ConfigureVelIntGain(int axis, float vel_int_gain){
     serial_ << "w axis" << axis << ".controller.config.vel_integrator_gain " << vel_int_gain << "\n";
 }
 
-// System Configuration Commands
+// System Commands
 float ODriveClass::BusVoltage(void){
     serial_ << "r vbus_voltage\n";
     return readFloat();
@@ -223,6 +230,7 @@ void ODriveClass::Reboot(void){
     while(!odrive_serial);
 }
 
+// General params
 float ODriveClass::readFloat() {
     return readString().toFloat();
 }
@@ -236,6 +244,7 @@ int32_t ODriveClass::readState(int axis) {
     return readInt();
 }
 
+// State Helper
 bool ODriveClass::run_state(int axis, int requested_state, bool wait) {
     int timeout_ctr = 100;
     serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
