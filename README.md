@@ -12,10 +12,12 @@ UART connection to an ODrive system.
 ## Changelog
 6/20/19: Added pan and tilt functionality \
 6/26/19: Refactored preprocessor directives \
-6/27/19: Added licensing and documentation.
+6/27/19: Added licensing and documentation. \
+7/03/19: Changed pan and tilt calculations.
 
 ## TODO
-Improve pan and tilt code. \
+Test returning structs. \
 Handle mode switch cases. \
 Handle override cases. \
-Handle do nothing cases.
+Handle do nothing cases. \
+Refactor startup calibration.
