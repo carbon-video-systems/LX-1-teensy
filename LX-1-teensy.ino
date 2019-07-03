@@ -77,8 +77,7 @@ void setup()
 
     delay(100);
 
-    // ODRIVE HOMING FUNCTION
-        // incl:  move to 0, delay, read encoder, do math for encoder position
+    lx1_startup_sequence(odrive);
 }
 
 /**
