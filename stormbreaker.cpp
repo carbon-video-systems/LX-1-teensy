@@ -22,7 +22,7 @@
 #define MOTOR_ENCODER_COUNT CPR //depends on the DIP switches inside the AMT102
 #define PAN_TILT_COUNT_MAXIMUM 65536 //2 byte resolution for pan/tilt control
 #define PAN_TILT_COUNT_MIDPOINT 32768 //half of the 2 byte resolution
-#define PAN_TILT_SCALING_FACTOR 8    // MOTOR_ENCODER_COUNT/PAN_TILT_COUNT_MAXIMUM
+#define PAN_TILT_SCALING_FACTOR 8    // PAN_TILT_COUNT_MAXIMUM/MOTOR_ENCODER_COUNT
 #define TENSION_SCALING_FACTOR  1   // scaling factor between one motor revolution and one system revolution
 
 #define ARTNET_PAN_TILT_SCALING_FACTOR_270   0.75 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 270 degrees
@@ -249,10 +249,10 @@ void StormBreaker::ArtNetTilt()
         odrive_.SetControlModeVel(AXIS_HEAD);
         if((ArtNetHead.tilt_control >= 1) && (ArtNetHead.tilt_control <= 126)){
             //scale based on the velocity limit
-            odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+            odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
             //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
-            odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 2 - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+            odrive_.SetVelocity(AXIS_HEAD, (-VEL_VEL_LIMIT + ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         }
         break;
     }
