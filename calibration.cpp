@@ -269,3 +269,13 @@ void parameter_configuration(ODriveClass& odrive, int axis)
         }
     #endif
 }
+
+/**
+  * @brief  Homes the odrive
+  * @param  ODriveClass& odrive - ODriveClass instantiated object
+  * @param  int axis - axis to be configured
+  * @return void
+  */
+ void homing_system(ODriveClass& odrive, int axis){
+
+ }

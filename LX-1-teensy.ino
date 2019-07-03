@@ -17,10 +17,10 @@
 /* Includes ---------------------------------------------------------------------------------------*/
 #include <Arduino.h>
 
+#include "options.h"
 #include "calibration.h"
 #include "debug.h"
 #include "ODriveLib.h"
-#include "options.h"
 #include "stormbreaker.h"
 
 /*Errors-------------------------------------------------------------------------------------------*/
@@ -76,6 +76,9 @@ void setup()
     #endif
 
     delay(100);
+
+    // ODRIVE HOMING FUNCTION
+        // incl:  move to 0, delay, read encoder, do math for encoder position
 }
 
 /**
