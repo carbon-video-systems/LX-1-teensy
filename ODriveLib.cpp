@@ -95,6 +95,8 @@ ODriveClass::Feedback_t ODriveClass::ReadFeedback(int motor_number){
     return Feedback;
 }
 
+HELLO!
+
 // ODrive Control Mode Commands
 void ODriveClass::SetControlModeTraj(int axis) {
     serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_TRAJECTORY_CONTROL << "\n";
