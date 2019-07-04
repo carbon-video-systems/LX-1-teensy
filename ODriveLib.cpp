@@ -88,11 +88,11 @@ void ODriveClass::TrapezoidalMove(int motor_number, float position){
     serial_ << "t " << motor_number << " " << position << "\n";
 }
 
-ODriveClass::Feedback_t ODriveClass::ReadFeedback(int motor_number){
+void ODriveClass::ReadFeedback(int motor_number){
     serial_ << "f " << motor_number << "\n";
     Feedback.position = readFloat();
     Feedback.velocity = readFloat();
-    return Feedback;
+    return; // read via:  odrive_.Feedback. in stormbreaker.
 }
 
 // ODrive Control Mode Commands
