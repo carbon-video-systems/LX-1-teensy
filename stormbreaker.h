@@ -39,6 +39,12 @@ public:
         IDENTIFY = 99
     };
 
+    enum MessageSize_t{
+        SIZE_IDENT = 0,
+        SIZE_BODY = 5,
+        SIZE_HEAD = 11
+    };
+
     struct Header_t {
         MessageType_t type;
         uint8_t size; //in bytes

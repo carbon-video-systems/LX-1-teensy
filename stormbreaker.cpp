@@ -19,6 +19,8 @@
 #include "calibration.h"
 
 /* Constants -----------------------------------------------------------*/
+#define MAX_STORMBREAKER_LENGTH 11  // maximum size of a stormbreaker message
+
 #define MOTOR_ENCODER_COUNT CPR //depends on the DIP switches inside the AMT102
 #define PAN_TILT_COUNT_MAXIMUM 65536 //2 byte resolution for pan/tilt control
 #define PAN_TILT_COUNT_MIDPOINT 32768 //half of the 2 byte resolution
@@ -36,7 +38,25 @@
 void StormBreaker::serviceStormBreaker()
 {
     Header.type = (StormBreaker::MessageType_t)pi_serial.read(); //TODO: check if read returns -1 and then throw an error (do this for all occurrences)
-    Header.size = pi_serial.read();
+    Header.size = (StormBreaker::MessageSize_t)pi_serial.read();
+
+    switch(Header.size){
+    case SIZE_IDENT:
+        if (Header.type != IDENTIFY)
+            Header.type = WARNING;
+        break;
+    case SIZE_BODY:
+        if (Header.type != ARTNETBODY)
+            Header.type = WARNING;
+        break;
+    case SIZE_HEAD:
+        if (Header.type != ARTNETHEAD)
+            Header.type = WARNING;
+        break;
+    default:
+        Header.type = ERROR;
+        break;
+    }
 
     #ifdef TESTING
         SerialUSB.println("Received StormBreaker message");
@@ -48,8 +68,14 @@ void StormBreaker::serviceStormBreaker()
 
     switch(Header.type){
     case ERROR:
+        #ifdef TESTING
+            SerialUSB.println("ERROR");
+        #endif
         break;
     case WARNING:
+        #ifdef TESTING
+            SerialUSB.println("WARNING");
+        #endif
         break;
     case OK:
         break;
@@ -248,10 +274,10 @@ void StormBreaker::ArtNetTilt()
     default: //continuous cw or ccw rotation
         odrive_.SetControlModeVel(AXIS_HEAD);
         if((ArtNetHead.tilt_control >= 1) && (ArtNetHead.tilt_control <= 126)){
-            //scale based on the velocity limit
+            //scale based on the velocity limit CW
             odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
-            //scale based on the velocity limit (note how the -1 causes the equation to wrap around to negative values thus changing the direction of rotation)
+            //scale based on the velocity limit CCW
             odrive_.SetVelocity(AXIS_HEAD, (-VEL_VEL_LIMIT + ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
         }
         break;
