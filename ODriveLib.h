@@ -99,8 +99,9 @@ public:
     void ReadFeedback(int motor_number);
 
     // Control Mode
-    void SetControlModeTraj(int axis);
     void SetControlModeVel(int axis);
+    void SetControlModePos(int axis);
+    void SetControlModeTraj(int axis);
 
     // Motor Configuration Commands
     int MotorCalibrationStatus(int axis);

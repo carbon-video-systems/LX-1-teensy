@@ -95,13 +95,17 @@ void ODriveClass::ReadFeedback(int motor_number){
     return; // read via:  odrive_.Feedback. in stormbreaker.
 }
 
-// ODrive Control Mode Commands
-void ODriveClass::SetControlModeTraj(int axis) {
-    serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_TRAJECTORY_CONTROL << "\n";
-}
-
+// ODrive Control Mode Command
 void ODriveClass::SetControlModeVel(int axis) {
     serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_VELOCITY_CONTROL << "\n";
+}
+
+void ODriveClass::SetControlModePos(int axis) {
+    serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_POSITION_CONTROL << "\n";
+}
+
+void ODriveClass::SetControlModeTraj(int axis) {
+    serial_ << "w axis" << axis << ".controller.config.control_mode " << CTRL_MODE_TRAJECTORY_CONTROL << "\n";
 }
 
 // Motor configuration Commands
