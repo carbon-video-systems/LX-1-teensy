@@ -345,5 +345,6 @@ void StormBreaker::ArtNetPowerSpecialFunctions()
 
 void StormBreaker::serviceIdentify()
 {
-    pi_serial.println(IDENTIFIER);
+    pi_serial.write(IDENTIFIER);
+    pi_serial.println();
 }
