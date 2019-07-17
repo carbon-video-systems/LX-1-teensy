@@ -24,6 +24,7 @@ void Debug::serviceDebug()
     char command = SerialUSB.read();
 
     switch(command){
+    // Configuration Commands
     case 's':
         SerialUSB.println("Saving configuration");
         odrive_.SaveConfiguration();
@@ -39,6 +40,43 @@ void Debug::serviceDebug()
         odrive_.Reboot();
         delay(1000);
         odrive_startup_sequence(odrive_);
+        break;
+    // State read Commands
+    case 'c':
+        SerialUSB.println("Current state");
+        #if defined BODY || defined BOTH_FOR_TESTING
+            int32_t body = odrive_.readState(AXIS_BODY);
+            SerialUSB.print("BODY: ");
+            SerialUSB.println(body);
+        #endif
+        #if defined HEAD || defined BOTH_FOR_TESTING
+            int32_t head = odrive_.readState(AXIS_HEAD);
+            SerialUSB.print("HEAD: ");
+            SerialUSB.println(head);
+        #endif
+        break;
+    case 'f':
+        #if defined BODY || defined BOTH_FOR_TESTING
+            odrive_.ReadFeedback(AXIS_BODY);
+            SerialUSB.println("BODY Feedback");
+            SerialUSB.print("pos: ");
+            SerialUSB.print(odrive_.Feedback.position);
+            SerialUSB.print("  vel: ");
+            SerialUSB.println(odrive_.Feedback.velocity);
+        #endif
+        #if defined HEAD || defined BOTH_FOR_TESTING
+            odrive_.ReadFeedback(AXIS_HEAD);
+            SerialUSB.println("HEAD Feedback");
+            SerialUSB.print("pos: ");
+            SerialUSB.print(odrive_.Feedback.position);
+            SerialUSB.print("  vel: ");
+            SerialUSB.println(odrive_.Feedback.velocity);
+        #endif
+        break;
+    case 'v':
+        SerialUSB.print("BUS VOLTAGE: ");
+        float voltage = odrive_.BusVoltage();
+        SerialUSB.println(voltage);
         break;
     case '\n':
         break;
