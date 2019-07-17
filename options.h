@@ -31,9 +31,9 @@
 #endif
 
 /* Define either BODY or HEAD for normal operation or BOTH_FOR_TESTING for testing purposes*/
-// #define BODY
+#define BODY
 // #define HEAD
-#define BOTH_FOR_TESTING
+// #define BOTH_FOR_TESTING
 
 #if defined BODY
     /* Body specific stuff */
