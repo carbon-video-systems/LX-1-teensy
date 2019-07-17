@@ -94,6 +94,8 @@ void odrive_startup_sequence(ODriveClass& odrive)
                     reconfigure_startup(odrive, axis);
                 }
             }
+
+            odrive.SetControlModePos(axis);
         }
 
     // save calibration and reboot if either axis needs reconfiguration
@@ -106,7 +108,7 @@ void odrive_startup_sequence(ODriveClass& odrive)
         delay(100);
 
         odrive.Reboot();
-        delay(1000);
+        delay(2000);
     }
 
     return;
