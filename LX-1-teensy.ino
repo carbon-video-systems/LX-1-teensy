@@ -54,6 +54,10 @@ Debug debugger(odrive);
  */
 void setup()
 {
+    // Power on LED indicator
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+
     // ODrive uses 115200 baud
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);
@@ -68,7 +72,7 @@ void setup()
         while (!SerialUSB); // wait for Arduino Serial Monitor to open
     #endif
 
-    // odrive_startup_sequence(odrive);
+    odrive_startup_sequence(odrive);
 
     #ifdef TESTING
         SerialUSB.println("Hi computer, how are you today? :D");
@@ -77,7 +81,7 @@ void setup()
 
     delay(100);
 
-    // lx1_startup_sequence(odrive);
+    lx1_startup_sequence(odrive);
 }
 
 /**
