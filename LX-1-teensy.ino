@@ -54,6 +54,10 @@ Debug debugger(odrive);
  */
 void setup()
 {
+    // Power on LED indicator
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+
     // ODrive uses 115200 baud
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);

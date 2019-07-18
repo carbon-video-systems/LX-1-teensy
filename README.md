@@ -15,7 +15,9 @@ UART connection to an ODrive system.
 6/27/19: Added licensing and documentation. \
 7/03/19: Changed pan and tilt calculations. \
 7/04/19: Added message size error checking. \
-7/15/19: Handled mode switch cases.
+7/15/19: Handled mode switch cases. \
+7/18/19: Added power LED indicator.
 
 ## TODO
-Refactor startup calibration.
+Introduce homing capabilities. \
+More robust error check/handling.
