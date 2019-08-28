@@ -11,9 +11,8 @@ class LS7366R
 private:
     void load_rst_reg(unsigned char);
     void singleByteWrite(unsigned char, unsigned char);
-    unsigned char singleByteRead(unsigned char);
+    uint8_t singleByteRead(unsigned char);
     void multiByteStoreRead(unsigned char op_code, int bytes);
-
 
 protected:
     union { // Union makes conversion from 4 bytes to an unsigned 32-bit int easy
@@ -36,6 +35,7 @@ public:
     void setCS(int pin);
 
     int32_t counterRead();
+    uint8_t stringRead();
 
 };
 

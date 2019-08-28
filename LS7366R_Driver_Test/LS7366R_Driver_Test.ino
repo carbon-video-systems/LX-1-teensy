@@ -11,10 +11,18 @@
 
 void setup() {
   // put your setup code here, to run once:
+
+    #ifdef TESTING
+        SerialUSB.begin(USB_SERIAL_BAUD);
+        while (!SerialUSB);
+    #endif
+
     LS7366R.begin();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  LS7366R.counterRead();
+  delay(500);
 
 }

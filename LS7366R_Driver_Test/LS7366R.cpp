@@ -99,11 +99,20 @@ LS7366R::~LS7366R(){
 void LS7366R::begin()
 {
     load_rst_reg(CLR_CNTR);
-    // CLEAN UP THESE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    singleByteWrite(WRITE_MDR0, QUADRX4|FREE_RUN|INDX_LOADC|SYNCH_INDX|FILTER_2);
-    singleByteWrite(WRITE_MDR1, IDX_FLAG|CMP_FLAG|BYTE_2|EN_CNTR);
-    singleByteRead(READ_MDR0);
-    singleByteRead(READ_MDR1);
+
+    // Quadrature mode x4, free running count, index resets the counter, asynchronous, filter x1
+    singleByteWrite(WRITE_MDR0, QUADRX4|FREE_RUN|INDX_RESETC|ASYNCH_INDX|FILTER_1);
+    // Index flag output, counter enabled, 3 byte operation
+    singleByteWrite(WRITE_MDR1, IDX_FLAG|EN_CNTR|BYTE_3);
+
+    if (debug){
+        uint8_t MDR0 = singleByteRead(READ_MDR0);
+        SerialUSB.print("MDR0: ");
+        SerialUSB.println(MDR0);
+        uint8_t MDR1 = singleByteRead(READ_MDR1);
+        SerialUSB.print("MDR1: ");
+        SerialUSB.println(MDR1);
+    }
 }
 
 void LS7366R::load_rst_reg(unsigned char op_code) //dataless write command
@@ -126,9 +135,9 @@ void LS7366R::singleByteWrite(unsigned char op_code, unsigned char data) //singl
     // SPI_counter.endTransaction();
 }
 
-unsigned char LS7366R::singleByteRead(unsigned char op_code) //single byte read command
+uint8_t LS7366R::singleByteRead(unsigned char op_code) //single byte read command
 {
-    unsigned char spi_data;
+    uint8_t spi_data;
     // SPI_counter.beginTransaction(settingsA);
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
@@ -153,19 +162,39 @@ void LS7366R::multiByteStoreRead(unsigned char op_code, int bytes)
 
 int32_t LS7366R::counterRead()
 {
-    const unsigned char sign_bit = 1;
+    const uint8_t sign_bit = 1;
     int32_t counter_value;
 
     multiByteStoreRead(READ_CNTR, counterBytes);
-    unsigned char STR = singleByteRead(READ_STR);
+    uint8_t STR = singleByteRead(READ_STR);
 
-// NOT FINISHED HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if ((STR & sign_bit) == sign_bit){
-        counter_value = (-1) * (int32_t) // BYTE READ
+        counter_value = (-1) * (int32_t)data.uint32; // BYTE READ
     }
     else{
-        counter_value = (int32_t);
+        counter_value = (int32_t)data.uint32;
+    }
+
+    if (debug){
+        SerialUSB.print("STR: ");
+        SerialUSB.println(STR);
+        SerialUSB.print("Counter: ");
+        SerialUSB.println(counter_value);
+        SerialUSB.println();
     }
 
     return counter_value;
+}
+
+uint8_t LS7366R::stringRead()
+{
+    uint8_t STR = singleByteRead(READ_STR);
+
+    if(debug){
+        SerialUSB.print("STR: ");
+        SerialUSB.println(STR);
+        SerialUSB.println();
+    }
+
+    return STR;
 }
