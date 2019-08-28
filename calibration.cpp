@@ -3,7 +3,7 @@
  *
  * @file    calibration.cpp
  * @author  Carbon Video Systems 2019
- * @description   O=Drive calibration script.
+ * @description   O-Drive calibration script.
  * This file reads the current state of the ODrive system
  * and calibrates the motors if required.
  *

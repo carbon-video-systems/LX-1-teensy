@@ -1,44 +1,59 @@
+/*
+ * LS7366R Driver Source
+ *
+ * @file    LS7366R.cpp
+ * @author  Carbon Video Systems 2019
+ * @description   Driver for communicating with the LS7366R Quadrature Counter.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
+
+/* Includes-------------------------------------------------------------*/
 #include "LS7366R.h"
 #include "options.h"
 
-/***MDR0 configuration data - the configuration byte is formed with***
- ***single segments taken from each group and ORing all together.***/
+/* Constants -----------------------------------------------------------*/
+/* MDR0 configuration data */
 //Count modes
 #define NQUAD 0x00 //non-quadrature mode
-#define QUADRX1 0x01 //X1 quadrature mode
-#define QUADRX2 0x02 //X2 quadrature mode
-#define QUADRX4 0x03 //X4 quadrature mode
+#define QUADRX1 0x01    //X1 quadrature mode
+#define QUADRX2 0x02    //X2 quadrature mode
+#define QUADRX4 0x03    //X4 quadrature mode
 //Running modes
 #define FREE_RUN 0x00
 #define SINGE_CYCLE 0x04
 #define RANGE_LIMIT 0x08
 #define MODULO_N 0x0C
 //Index modes
-#define DISABLE_INDX 0x00 //index_disabled
-#define INDX_LOADC 0x10 //index_load_CNTR
-#define INDX_RESETC 0x20 //index_rest_CNTR
-#define INDX_LOADO 0x30 //index_load_OL
-#define ASYNCH_INDX 0x00 //asynchronous index
-#define SYNCH_INDX 0x80 //synchronous index
+#define DISABLE_INDX 0x00   //index_disabled
+#define INDX_LOADC 0x10     //index_load_CNTR
+#define INDX_RESETC 0x20    //index_rest_CNTR
+#define INDX_LOADO 0x30     //index_load_OL
+#define ASYNCH_INDX 0x00    //asynchronous index
+#define SYNCH_INDX 0x40     //synchronous index
 //Clock filter modes
-#define FILTER_1 0x00 //filter clock frequency division factor 1
-#define FILTER_2 0x80 //filter clock frequency division factor 2
-/* **MDR1 configuration data; any of these***
- ***data segments can be ORed together***/
+#define FILTER_1 0x00   //filter clock frequency division factor 1
+#define FILTER_2 0x80   //filter clock frequency division factor 2
+
+/* MDR1 configuration data */
 //Flag modes
-#define NO_FLAGS 0x00 //all flags disabled
-#define IDX_FLAG 0x10; //IDX flag
-#define CMP_FLAG 0x20; //CMP flag
-#define BW_FLAG 0x40; //BW flag
-#define CY_FLAG 0x80; //CY flag
+#define NO_FLAGS 0x00   //all flags disabled
+#define IDX_FLAG 0x10   //IDX flag
+#define CMP_FLAG 0x20   //CMP flag
+#define BW_FLAG 0x40    //BW flag
+#define CY_FLAG 0x80    //CY flag
 //1 to 4 bytes data-width
-#define BYTE_4 0x00; //four byte mode
-#define BYTE_3 0x01; //three byte mode
-#define BYTE_2 0x02; //two byte mode
-#define BYTE_1 0x03; //one byte mode
+#define BYTE_4 0x00     //four byte mode
+#define BYTE_3 0x01     //three byte mode
+#define BYTE_2 0x02     //two byte mode
+#define BYTE_1 0x03     //one byte mode
 //Enable/disable counter
-#define EN_CNTR 0x00; //counting enabled
-#define DIS_CNTR 0x04; //counting disabled
+#define EN_CNTR 0x00    //counting enabled
+#define DIS_CNTR 0x04   //counting disabled
 
 /* LS7366R op-code list */
 #define CLR_MDR0 0x08
@@ -58,15 +73,15 @@
 
 // SPISettings settingsA(4000000, MSBFIRST, SPI_MODE0);
 
-////////////////////////////////////////////////////////////////////////////////
-// Description  : This constructor does the required setup.  Utilizing the stock
-//                SPI library, so only the chip select needs to be chosen.
-// Input        : uint8_t _cs: The Arduino pin number of the chip select line
-//                for this instance
-// Output       : Instance of this class with pins configured
-// Return       : None
-// Usage        : LS7366R <name>(<pinNumber>);
-////////////////////////////////////////////////////////////////////////////////
+/* Functions------------------------------------------------------------*/
+/**
+  * @brief  Class Constructor - sets up the lS7366R class.  Utilizes the stock
+  *     SPI library.  Only chip select needs to be chosen.
+  * @param  const uint8_t _cs - the pin to assign SS to
+  * @param  const uint8_t _resolution - sets resolution of the counter in bytes
+  * @param  const bool _debug - flag that sets debugging outputs
+  * @return void
+  */
 LS7366R::LS7366R(const uint8_t _cs, const uint8_t _resolution, const bool _debug) : cs(_cs), resolution(_resolution), debug(_debug)
 {
   pinMode(cs, OUTPUT);
@@ -76,9 +91,11 @@ LS7366R::LS7366R(const uint8_t _cs, const uint8_t _resolution, const bool _debug
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Change the cs pin
-////////////////////////////////////////////////////////////////////////////////
+/**
+  * @brief  Changes the Slave Select pin assignment (chip select)
+  * @param  int pin - the pin to assign SS to
+  * @return void
+  */
 void LS7366R::setCS(int pin)
 {
     digitalWrite(cs, HIGH); // Make sure to set old cs high to disable the chip
@@ -87,31 +104,37 @@ void LS7366R::setCS(int pin)
     digitalWrite(cs, HIGH);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Destructor does nothing.  It's up to the user to re-assign
-// chip select pin if they want to use it for something else.  We don't call
-// SPI.end() in case there is another SPI device we don't want to kill.
-////////////////////////////////////////////////////////////////////////////////
+/**
+  * @brief  Class Destructor - currently does nothing.
+  * @param  void
+  * @return void
+  */
 LS7366R::~LS7366R(){
     return;
 }
 
+/**
+  * @brief  LS7366R setup function - clears the counter and sets
+  *     the MDR0 and MDR1 registers.
+  * @param  void
+  * @return void
+  */
 void LS7366R::begin()
 {
     load_rst_reg(CLR_CNTR);
 
     // Quadrature mode x4, free running count, index resets the counter, asynchronous, filter x1
-    singleByteWrite(WRITE_MDR0, QUADRX4|FREE_RUN|INDX_RESETC|ASYNCH_INDX|FILTER_1);
+    singleByteWrite(WRITE_MDR0, QUADRX4|FREE_RUN|INDX_RESETC|SYNCH_INDX|FILTER_1);
     // Index flag output, counter enabled, 3 byte operation
     singleByteWrite(WRITE_MDR1, IDX_FLAG|EN_CNTR|BYTE_3);
 
     if (debug){
         uint8_t MDR0 = singleByteRead(READ_MDR0);
         SerialUSB.print("MDR0: ");
-        SerialUSB.println(MDR0);
+        SerialUSB.println(MDR0, BIN);
         uint8_t MDR1 = singleByteRead(READ_MDR1);
         SerialUSB.print("MDR1: ");
-        SerialUSB.println(MDR1);
+        SerialUSB.println(MDR1, BIN);
     }
 }
 
@@ -153,7 +176,7 @@ void LS7366R::multiByteStoreRead(unsigned char op_code, int bytes)
 {
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
-    for(i = 0; i < bytes; i++){
+    for(int8_t i = 0; i < bytes; i++){
         data.bytes[i] = SPI_counter.transfer(0);
     }
     digitalWrite(cs, HIGH);
@@ -177,7 +200,7 @@ int32_t LS7366R::counterRead()
 
     if (debug){
         SerialUSB.print("STR: ");
-        SerialUSB.println(STR);
+        SerialUSB.println(STR, BIN);
         SerialUSB.print("Counter: ");
         SerialUSB.println(counter_value);
         SerialUSB.println();
@@ -192,7 +215,7 @@ uint8_t LS7366R::stringRead()
 
     if(debug){
         SerialUSB.print("STR: ");
-        SerialUSB.println(STR);
+        SerialUSB.println(STR, BIN);
         SerialUSB.println();
     }
 

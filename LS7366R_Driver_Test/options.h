@@ -55,7 +55,7 @@
 #define odrive_serial   Serial1
 #define pi_serial       Serial2
 
-#define SPI_counter         SPI0
+#define SPI_counter         SPI
 #define COUNTER_SELECT_PIN  15
 #define counterBytes        3
 

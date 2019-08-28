@@ -1,11 +1,28 @@
+/*
+ * LS7366R Driver Header
+ *
+ * @file    LS7366R.h
+ * @author  Carbon Video Systems 2019
+ * @description   Driver for communicating with the LS7366R Quadrature Counter.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
+
+/* Include Guard--------------------------------------------------------*/
 #ifndef _LS7366R_h_
 #define _LS7366R_h_
 
+/* Includes-------------------------------------------------------------*/
 #include <Arduino.h>
 #include <SPI.h> // Have to include this in the main sketch too... (Using SPI)
 
 /*Constants------------------------------------------------------------*/
 
+/* Functions------------------------------------------------------------*/
 class LS7366R
 {
 private:
@@ -28,15 +45,12 @@ public:
     LS7366R(const uint8_t, const uint8_t _resolution = 3, const bool _debug=0);
     ~LS7366R(); // User responsible 4 reassigning pins & stopping SPI
 
-    // If non-zero will turn on serial debugging messages
     uint8_t debug;
 
-    // Pass a pin number to set as CS
+    void begin(void);
     void setCS(int pin);
-
     int32_t counterRead();
     uint8_t stringRead();
-
 };
 
-#endif
+#endif //LS7366R_H
