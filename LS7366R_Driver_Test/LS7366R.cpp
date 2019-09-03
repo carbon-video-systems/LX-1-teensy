@@ -88,7 +88,6 @@ LS7366R::LS7366R(const uint8_t _cs, const uint8_t _resolution, const bool _debug
 
   SPI_counter.begin();
   digitalWrite(cs, HIGH);
-
 }
 
 /**
@@ -122,12 +121,12 @@ LS7366R::~LS7366R(){
 void LS7366R::begin()
 {
     load_rst_reg(CLR_CNTR);
-
     // Quadrature mode x4, free running count, index resets the counter, asynchronous, filter x1
     singleByteWrite(WRITE_MDR0, QUADRX4|FREE_RUN|INDX_RESETC|SYNCH_INDX|FILTER_1);
     // Index flag output, counter enabled, 3 byte operation
     singleByteWrite(WRITE_MDR1, IDX_FLAG|EN_CNTR|BYTE_3);
 
+    // Debugging outputs
     if (debug){
         uint8_t MDR0 = singleByteRead(READ_MDR0);
         SerialUSB.print("MDR0: ");
@@ -185,12 +184,11 @@ void LS7366R::multiByteWrite(unsigned char op_code, uint32_t data, int bytes)
 
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
-    for(int8_t i = 0; i < bytes; i++){
-        SPI_counter.transfer(data_out.write_bytes[i]);
-    }
-    digitalWrite(cs, HIGH);
 
-    return;
+    for(int8_t i = 0; i < bytes; i++)
+        SPI_counter.transfer(data_out.write_bytes[i]);
+
+    digitalWrite(cs, HIGH);
 }
 
 /**
@@ -222,17 +220,17 @@ void LS7366R::multiByteStoreRead(unsigned char op_code, int bytes)
 {
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
-    for(int8_t i = 0; i < bytes; i++){
+
+    for(int8_t i = 0; i < bytes; i++)
         count.bytes[i] = SPI_counter.transfer(0);
-    }
+
     digitalWrite(cs, HIGH);
 
+    // Debugging outputs
     if (debug){
         SerialUSB.print("Raw counter: ");
         SerialUSB.println(count.uint32);
     }
-
-    return;
 }
 
 /**
@@ -250,11 +248,11 @@ int32_t LS7366R::counterRead()
 
     if ((STR & sign_bit) == sign_bit){
         counter_value = (-1) * (int32_t)count.uint32; // BYTE READ
-    }
-    else{
+    } else{
         counter_value = (int32_t)count.uint32;
     }
 
+    // Debugging outputs
     if (debug){
         SerialUSB.print("Counter: ");
         SerialUSB.println(counter_value);
@@ -273,6 +271,7 @@ uint8_t LS7366R::statusRead()
 {
     uint8_t STR = singleByteRead(READ_STR);
 
+    // Debugging outputs
     if(debug){
         SerialUSB.print("STR: ");
         SerialUSB.println(STR, BIN);
