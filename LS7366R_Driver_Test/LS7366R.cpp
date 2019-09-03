@@ -138,6 +138,11 @@ void LS7366R::begin()
     }
 }
 
+/**
+  * @brief  LS7366R dataless write command - loads reset registers
+  * @param  unsigned char op_code - 8 bit char sent to the instruction register
+  * @return void
+  */
 void LS7366R::load_rst_reg(unsigned char op_code) //dataless write command
 {
     // SPI_counter.beginTransaction(settingsA);
@@ -147,76 +152,130 @@ void LS7366R::load_rst_reg(unsigned char op_code) //dataless write command
     // SPI_counter.endTransaction();
 }
 
-void LS7366R::singleByteWrite(unsigned char op_code, unsigned char data) //single byte write command
+/**
+  * @brief  Single byte write command - sends single data byte to the LS7366R
+  * @param  unsigned char op_code - 8 bit char sent to the instruction register
+  * @param  unsigned char data - single byte of data to be sent to the LS7366R
+  * @return void
+  */
+void LS7366R::singleByteWrite(unsigned char op_code, unsigned char data)
 {
-    // SPI_counter.beginTransaction(settingsA);
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
     SPI_counter.transfer(data);
     /*additional bytes can be sent here for multibyte write, e.g., write_DTR*/
     digitalWrite(cs, HIGH);
-    // SPI_counter.endTransaction();
 }
 
+/**
+  * @brief  Multi-byte read and store command - Reads multiple bits from the
+  *     LS7366R and stores them in a union in the class.
+  * @param  unsigned char op_code - 8 bit char sent to the instruction register
+  * @param  int bytes - number of bytes to read from the LS7366R
+  * @return void
+  */
+void LS7366R::multiByteWrite(unsigned char op_code, uint32_t data, int bytes)
+{
+    union {
+    uint8_t write_bytes[4];
+    uint32_t write_uint32;
+    } data_out;
+
+    data_out.write_uint32 = data;
+
+    digitalWrite(cs, LOW);
+    SPI_counter.transfer(op_code);
+    for(int8_t i = 0; i < bytes; i++){
+        SPI_counter.transfer(data_out.write_bytes[i]);
+    }
+    digitalWrite(cs, HIGH);
+
+    return;
+}
+
+/**
+  * @brief  Single byte read command - reads one byte from LS7366R
+  * @param  unsigned char op_code - 8 bit char sent to the instruction register
+  * @return uint8_t - single byte of data received from the LS7366R
+  */
 uint8_t LS7366R::singleByteRead(unsigned char op_code) //single byte read command
 {
     uint8_t spi_data;
-    // SPI_counter.beginTransaction(settingsA);
+
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
     spi_data = SPI_counter.transfer(0);
     /*additional bytes can be received here for multibyte read, e.g., read_OTR*/
     digitalWrite(cs, HIGH);
-    // SPI_counter.endTransaction();
 
     return spi_data;
 }
 
+/**
+  * @brief  Multi-byte read and store command - Reads multiple bits from the
+  *     LS7366R and stores them in a union in the class.
+  * @param  unsigned char op_code - 8 bit char sent to the instruction register
+  * @param  int bytes - number of bytes to read from the LS7366R
+  * @return void
+  */
 void LS7366R::multiByteStoreRead(unsigned char op_code, int bytes)
 {
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
     for(int8_t i = 0; i < bytes; i++){
-        data.bytes[i] = SPI_counter.transfer(0);
+        count.bytes[i] = SPI_counter.transfer(0);
     }
     digitalWrite(cs, HIGH);
+
+    if (debug){
+        SerialUSB.print("Raw counter: ");
+        SerialUSB.println(count.uint32);
+    }
+
     return;
 }
 
+/**
+  * @brief  Reads the current encoder counter value
+  * @param  void
+  * @return int32_t - current encoder counter value
+  */
 int32_t LS7366R::counterRead()
 {
     const uint8_t sign_bit = 1;
     int32_t counter_value;
 
     multiByteStoreRead(READ_CNTR, counterBytes);
-    uint8_t STR = singleByteRead(READ_STR);
+    uint8_t STR = statusRead();
 
     if ((STR & sign_bit) == sign_bit){
-        counter_value = (-1) * (int32_t)data.uint32; // BYTE READ
+        counter_value = (-1) * (int32_t)count.uint32; // BYTE READ
     }
     else{
-        counter_value = (int32_t)data.uint32;
+        counter_value = (int32_t)count.uint32;
     }
 
     if (debug){
-        SerialUSB.print("STR: ");
-        SerialUSB.println(STR, BIN);
         SerialUSB.print("Counter: ");
         SerialUSB.println(counter_value);
-        SerialUSB.println();
     }
 
     return counter_value;
 }
 
-uint8_t LS7366R::stringRead()
+/**
+  * @brief  Status register read command - Reads the status register
+  *     of the LS7366R
+  * @param  void
+  * @return uint8_t - 8 bit STR value
+  */
+uint8_t LS7366R::statusRead()
 {
     uint8_t STR = singleByteRead(READ_STR);
 
     if(debug){
         SerialUSB.print("STR: ");
         SerialUSB.println(STR, BIN);
-        SerialUSB.println();
     }
 
     return STR;

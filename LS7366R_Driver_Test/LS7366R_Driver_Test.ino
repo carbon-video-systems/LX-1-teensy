@@ -24,7 +24,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  encoder.counterRead();
+  int32_t count = encoder.counterRead();
+  SerialUSB.print("Counter Return:  ");
+  SerialUSB.println(count);
+
   delay(500);
 
 }

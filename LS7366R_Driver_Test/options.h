@@ -13,6 +13,7 @@
  * Distributed as-is; in accordance with the BSD 3-Clause License.
  */
 
+/* Include Guard--------------------------------------------------------*/
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
@@ -55,6 +56,7 @@
 #define odrive_serial   Serial1
 #define pi_serial       Serial2
 
+// LS7366R SPI constants
 #define SPI_counter         SPI
 #define COUNTER_SELECT_PIN  15
 #define counterBytes        3
