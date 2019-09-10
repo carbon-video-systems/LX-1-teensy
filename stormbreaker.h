@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "ODriveLib.h"
+#include "LS7366R.h"
 #include "options.h"
 
 /* Constants -----------------------------------------------------------*/
@@ -28,7 +29,7 @@
 /* Functions------------------------------------------------------------*/
 class StormBreaker {
 public:
-    StormBreaker(ODriveClass& odrive) : odrive_(odrive) {}
+    StormBreaker(ODriveClass& odrive, LS7366R& encoder) : odrive_(odrive), encoder_(encoder) {}
 
     enum MessageType_t {
         ERROR = -2,
@@ -72,6 +73,7 @@ public:
 
 private:
     ODriveClass& odrive_;
+    LS7366R& encoder_;
 
     // body functions
     void receiveArtNetBody();

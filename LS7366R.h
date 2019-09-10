@@ -44,8 +44,7 @@ protected:
 
 public:
     // Class Constructor and Destructor
-    // LS7366R(const uint8_t, const uint8_t _resolution = 3, const bool _debug=0);
-    LS7366R(const uint8_t, const uint8_t _resolution = 4, const bool _debug=0);
+    LS7366R(const uint8_t, const uint8_t _resolution = 3, const bool _debug=0);
     ~LS7366R(); // User responsible for reassigning pins & stopping SPI
 
     uint8_t debug;

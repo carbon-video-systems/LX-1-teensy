@@ -28,6 +28,6 @@ void loop() {
   SerialUSB.print("Counter Return:  ");
   SerialUSB.println(count);
 
-  delay(500);
+  delay(10);
 
 }

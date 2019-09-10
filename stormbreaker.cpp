@@ -146,6 +146,7 @@ void StormBreaker::ArtNetPan()
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_BODY);
                 // Read system position
+                int32_t count = encoder_.counterRead();
                 odrive_.SetControlModeTraj(AXIS_BODY);
                 // Recompute index position
             }

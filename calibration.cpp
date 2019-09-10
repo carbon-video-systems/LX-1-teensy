@@ -277,14 +277,14 @@ void parameter_configuration(ODriveClass& odrive, int axis)
   * @param  ODriveClass& odrive - ODriveClass instantiated object
   * @return void
   */
-void lx1_startup_sequence(ODriveClass& odrive){
+void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder){
     // Homing the odrive system
     #if defined BODY || defined BOTH_FOR_TESTING
-        startup_homing(odrive, AXIS_BODY);
+        startup_homing(odrive, encoder, AXIS_BODY);
     #endif
 
     #if defined HEAD || defined BOTH_FOR_TESTING
-        startup_homing(odrive, AXIS_HEAD);
+        startup_homing(odrive, encoder, AXIS_HEAD);
     #endif
 }
 
@@ -294,7 +294,7 @@ void lx1_startup_sequence(ODriveClass& odrive){
   * @param  int axis - axis to be configured
   * @return void
   */
- void startup_homing(ODriveClass& odrive, int axis){
+ void startup_homing(ODriveClass& odrive, LS7366R& encoder, int axis){
      delayMicroseconds(4);
      // traj control mode?
      // move to 0

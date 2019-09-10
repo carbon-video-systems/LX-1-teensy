@@ -16,12 +16,14 @@
 
 /* Includes ---------------------------------------------------------------------------------------*/
 #include <Arduino.h>
+#include <SPI.h>
 
 #include "options.h"
 #include "calibration.h"
 #include "debug.h"
 #include "ODriveLib.h"
 #include "stormbreaker.h"
+#include "LS7366R.h"
 
 /*Errors-------------------------------------------------------------------------------------------*/
 #if (!(((defined BODY) == (defined HEAD)) == (defined BOTH_FOR_TESTING))) || (defined BODY && defined HEAD)
@@ -43,8 +45,15 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 
 /* Variables --------------------------------------------------------------------------------------*/
 ODriveClass odrive(odrive_serial);
-StormBreaker thor(odrive);
-Debug debugger(odrive);
+
+#ifdef TESTING
+    LS7366R encoder(COUNTER_SELECT_PIN, counterBytes, true);
+    Debug debugger(odrive);
+#else
+    LS7366R encoder(COUNTER_SELECT_PIN, counterBytes);
+#endif
+
+StormBreaker thor(odrive, encoder);
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -73,6 +82,7 @@ void setup()
     #endif
 
     odrive_startup_sequence(odrive);
+    encoder.begin();
 
     #ifdef TESTING
         SerialUSB.println("Hi computer, how are you today? :D");
@@ -81,7 +91,7 @@ void setup()
 
     delay(100);
 
-    lx1_startup_sequence(odrive);
+    lx1_startup_sequence(odrive, encoder);
 }
 
 /**
