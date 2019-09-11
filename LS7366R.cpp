@@ -123,8 +123,8 @@ void LS7366R::begin()
     load_rst_reg(CLR_CNTR);
     // Quadrature mode x4, free running count, index resets the counter, asynchronous, filter x1
     singleByteWrite(WRITE_MDR0, QUADRX4|FREE_RUN|INDX_RESETC|SYNCH_INDX|FILTER_1);
-    // Index flag output, counter enabled, 3 byte operation
-    singleByteWrite(WRITE_MDR1, IDX_FLAG|EN_CNTR|BYTE_3);
+    // Index flag output, counter enabled, 4 byte operation
+    singleByteWrite(WRITE_MDR1, IDX_FLAG|EN_CNTR|BYTE_4);
 
     // Debugging outputs
     if (debug){
@@ -221,17 +221,8 @@ void LS7366R::multiByteStoreRead(unsigned char op_code, int bytes)
     digitalWrite(cs, LOW);
     SPI_counter.transfer(op_code);
 
-    /*
-    for(int8_t i = 0; i < bytes; i++)
+    for (int i = (bytes - 1); i >= 0; i--)
         count.bytes[i] = SPI_counter.transfer(0);
-    */
-
-    for (int8_t i = (4 - bytes); i <= 4; i++)
-        count.bytes[i] = SPI_counter.transfer(0);
-    /*
-    for (int8_t i = bytes; i >= 0; i--)
-        count.bytes.[i] = SPI_counter.transfer(0);
-    */
 
     digitalWrite(cs, HIGH);
 
@@ -249,20 +240,12 @@ void LS7366R::multiByteStoreRead(unsigned char op_code, int bytes)
   */
 int32_t LS7366R::counterRead()
 {
-    const uint8_t sign_bit = 1;
-    int32_t counter_value;
-
     multiByteStoreRead(READ_CNTR, counterBytes);
-    uint8_t STR = statusRead();
-
-    if ((STR & sign_bit) == sign_bit){
-        counter_value = (-1) * (int32_t)count.uint32; // BYTE READ
-    } else{
-        counter_value = (int32_t)count.uint32;
-    }
+    int32_t counter_value = count.uint32;
 
     // Debugging outputs
     if (debug){
+        uint8_t STR = statusRead();
         SerialUSB.print("Counter: ");
         SerialUSB.println(counter_value);
     }
@@ -278,6 +261,7 @@ int32_t LS7366R::counterRead()
   */
 uint8_t LS7366R::statusRead()
 {
+    const uint8_t sign_bit = 1;
     uint8_t STR = singleByteRead(READ_STR);
 
     // Debugging outputs

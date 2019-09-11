@@ -60,7 +60,7 @@
 // LS7366R SPI constants
 #define SPI_counter         SPI
 #define COUNTER_SELECT_PIN  15
-#define counterBytes        3
+#define counterBytes        4
 
 #define USB_SERIAL_BAUD     115200
 #define ODRIVE_SERIAL_BAUD  115200
