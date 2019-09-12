@@ -23,6 +23,7 @@
 
 #include "ODriveLib.h"
 #include "LS7366R.h"
+#include "stormbreaker.h"
 #include "options.h"
 
 /* Constants -----------------------------------------------------------*/
@@ -42,8 +43,8 @@ void encoder_calibrate(ODriveClass&, int);
 void motor_calibrate(ODriveClass&, int);
 void parameter_configuration(ODriveClass&, int);
 
-void lx1_startup_sequence(ODriveClass&, LS7366R&);
-void startup_homing(ODriveClass&, LS7366R&, int);
+void lx1_startup_sequence(ODriveClass&, LS7366R&, StormBreaker&);
+void index_search(ODriveClass&, int);
 
 void homing_system(ODriveClass&, int);
 

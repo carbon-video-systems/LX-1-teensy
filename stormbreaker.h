@@ -69,6 +69,12 @@ public:
         uint8_t power_special_functions;
     } ArtNetHead;
 
+    struct SystemIndex_t {
+        int32_t pan_index;
+        int32_t tilt_index;
+        bool encoder_positive;
+    } SystemIndex;
+
     void serviceStormBreaker();
 
 private:

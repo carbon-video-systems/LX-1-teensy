@@ -31,6 +31,11 @@
 #define CPR                 8192    // counts/revolution
 #define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL
 
+#define HOMING_VELOCITY     4096    //counts per second
+
+// Scale from one odrive encoder count to one system encoder count
+#define SYSTEM_CORRELATION  0.3525
+
 // ODrive PID Calibration
 #define PID_POS_GAIN_BODY        20.0f       //default 20
 #define PID_VEL_GAIN_BODY        0.0005f     //default 0.0005
@@ -277,30 +282,56 @@ void parameter_configuration(ODriveClass& odrive, int axis)
   * @param  ODriveClass& odrive - ODriveClass instantiated object
   * @return void
   */
-void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder){
+void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor){
     // Homing the odrive system
     #if defined BODY || defined BOTH_FOR_TESTING
-        startup_homing(odrive, encoder, AXIS_BODY);
+        index_search(odrive, AXIS_BODY);
+        system_index(odrive, encoder, thor, AXIS_BODY);
     #endif
 
     #if defined HEAD || defined BOTH_FOR_TESTING
-        startup_homing(odrive, encoder, AXIS_HEAD);
+        index_search(odrive, AXIS_HEAD);
+    #endif
+
+    #if defined HEAD
+        system_index(odrive, encoder, thor, AXIS_HEAD);
     #endif
 }
 
 /**
-  * @brief  Homes one system axis on startup
+  * @brief  Searches for system index
   * @param  ODriveClass& odrive - ODriveClass instantiated object
   * @param  int axis - axis to be configured
   * @return void
   */
- void startup_homing(ODriveClass& odrive, LS7366R& encoder, int axis){
-     delayMicroseconds(4);
-     // traj control mode?
-     // move to 0
-     // delay
-     // read encoder
-     // do math for encoder position
+ void index_search(ODriveClass& odrive, int axis){
+    // Set up odrive for homing spin
+    odrive_.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
+    odrive_.SetControlModeTraj(axis);
+    odrive_.TrapezoidalMove(axis, (CPR * (TENSION_SCALING_FACTOR));
+    delay(4000);
+    do {
+        delay(250);
+        odrive_.ReadFeedback(axis);
+    }
+    while (abs(odrive.Feedback.velocity) >= 2);
+
+
+    // read encoder
+    // reindex
+    // move to new index 0
+ }
+
+ void system_index(ODriveClass&, LS7366R& encoder, StormBreaker& thor, int axis){
+    odrive_.ReadFeedBack(axis);
+    int32_t encoder_count = encoder_.counterRead();
+
+    if (encoder_count < 0)
+        thor_.SystemIndex.encoder_positive = false;
+    else
+        thor_.SystemIndex.encoder_positive = true;
+
+    // calculate + store system index
  }
 
 /**

@@ -91,7 +91,7 @@ void setup()
 
     delay(100);
 
-    lx1_startup_sequence(odrive, encoder);
+    lx1_startup_sequence(odrive, encoder, thor);
 }
 
 /**
