@@ -73,7 +73,7 @@ public:
     struct SystemIndex_t {
         int32_t pan_index;
         int32_t tilt_index;
-        bool encoder_positive;
+        bool encoder_direction;
     } SystemIndex;
 
     void serviceStormBreaker();

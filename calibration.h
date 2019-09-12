@@ -44,8 +44,11 @@ void motor_calibrate(ODriveClass&, int);
 void parameter_configuration(ODriveClass&, int);
 
 void lx1_startup_sequence(ODriveClass&, LS7366R&, StormBreaker&);
-void index_search(ODriveClass&, int);
-void system_index(ODriveClass&, LS7366R&, StormBreaker&, int);
-void homing_system(ODriveClass&, LS7366R&, StormBreaker&, int);
+void startup_index_search(ODriveClass&, int);
+void system_direction(LS7366R&, StormBreaker&, int);
+void startup_index(ODriveClass&, LS7366R&, StormBreaker&, int);
+
+int32_t system_reindex(float, int32_t, bool);
+void homing_system(ODriveClass&, int32_t, int, bool);
 
 #endif //CALIBRATION_H
