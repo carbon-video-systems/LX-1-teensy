@@ -303,7 +303,7 @@ void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& t
         odrive.ReadFeedback(axis);
         int32_t encoder_count = encoder.counterRead();
         SerialUSB.print("ODrive encoder count: ");
-        SerialUSB.prinln(odrive.Feedback.position);
+        SerialUSB.println(odrive.Feedback.position);
         SerialUSB.print("Homed Encoder Count: ");
         SerialUSB.println(encoder_count);
         SerialUSB.println();
@@ -360,7 +360,7 @@ void startup_index(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor, in
     int32_t encoder_count = encoder.counterRead();
 
     #if defined HEAD || defined BOTH_FOR_TESTING
-        thor.SystemIndex.pan_index = system_reindex(odrive.Feedback.position, encoder_count, thor.SystemIndex.encoder_direction, axis);
+        thor.SystemIndex.pan_index = system_reindex(odrive.Feedback.position, encoder_count, thor.SystemIndex.encoder_direction);
         #ifdef TESTING
             SerialUSB.print("Pan Index: ");
             SerialUSB.println(thor.SystemIndex.pan_index);
@@ -368,7 +368,7 @@ void startup_index(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor, in
     #endif
 
     #if defined BODY
-        thor.SystemIndex.tilt_index = system_reindex(odrive.Feedback.position, encoder_count, thor.SystemIndex.encoder_direction, axis);
+        thor.SystemIndex.tilt_index = system_reindex(odrive.Feedback.position, encoder_count, thor.SystemIndex.encoder_direction);
         #ifdef TESTING
             SerialUSB.print("Tilt Index: ");
             SerialUSB.println(thor.SystemIndex.tilt_index);
@@ -394,7 +394,7 @@ int32_t system_reindex(float odrive_position, int32_t encoder_count, bool direct
         else
             index = odrive_position + ((- MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
     } else{
-        if (abs_encoder_count <= MAGNETIC_ENCODER_HALF){
+        if (abs_encoder_count <= MAGNETIC_ENCODER_HALF)
             index = odrive_position + (encoder_count * SYSTEM_CORRELATION);
         else
             index = odrive_position - ((MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
