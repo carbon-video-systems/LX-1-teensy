@@ -25,6 +25,7 @@
 #include "options.h"
 
 /* Constants -----------------------------------------------------------*/
+#define TENSION_SCALING_FACTOR  4.2   // scaling factor between one motor revolution and one system revolution
 
 /* Functions------------------------------------------------------------*/
 class StormBreaker {

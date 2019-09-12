@@ -45,7 +45,7 @@ void parameter_configuration(ODriveClass&, int);
 
 void lx1_startup_sequence(ODriveClass&, LS7366R&, StormBreaker&);
 void index_search(ODriveClass&, int);
-
-void homing_system(ODriveClass&, int);
+void system_index(ODriveClass&, LS7366R&, StormBreaker&, int);
+void homing_system(ODriveClass&, LS7366R&, StormBreaker&, int);
 
 #endif //CALIBRATION_H

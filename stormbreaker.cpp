@@ -25,7 +25,6 @@
 #define PAN_TILT_COUNT_MAXIMUM 65536 //2 byte resolution for pan/tilt control
 #define PAN_TILT_COUNT_MIDPOINT 32768 //half of the 2 byte resolution
 #define PAN_TILT_SCALING_FACTOR 8    // PAN_TILT_COUNT_MAXIMUM/MOTOR_ENCODER_COUNT
-#define TENSION_SCALING_FACTOR  4.2   // scaling factor between one motor revolution and one system revolution
 
 #define ARTNET_PAN_TILT_SCALING_FACTOR_270   0.75 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 270 degrees
 #define ARTNET_PAN_TILT_SCALING_FACTOR_360   1 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 360 degrees

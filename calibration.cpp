@@ -279,22 +279,26 @@ void parameter_configuration(ODriveClass& odrive, int axis)
 
 /**
   * @brief  LX1 system startup homing sequence
-  * @param  ODriveClass& odrive - ODriveClass instantiated object
+  * @param  ODriveClass& odrive - ODriveClass instantiated class object
+  * @param  LS7366R& encoder - LS7366R encoder instantiated class object
+  * @param  StormBreaker& thor - StormBreaker instantiated class object
   * @return void
   */
 void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor){
     // Homing the odrive system
-    #if defined BODY || defined BOTH_FOR_TESTING
-        index_search(odrive, AXIS_BODY);
-        system_index(odrive, encoder, thor, AXIS_BODY);
-    #endif
-
     #if defined HEAD || defined BOTH_FOR_TESTING
         index_search(odrive, AXIS_HEAD);
+        system_index(odrive, encoder, thor, AXIS_HEAD);
+        homing_system(odrive, encoder, thor, AXIS_HEAD);
     #endif
 
-    #if defined HEAD
-        system_index(odrive, encoder, thor, AXIS_HEAD);
+    #if defined BODY || defined BOTH_FOR_TESTING
+        index_search(odrive, AXIS_BODY);
+    #endif
+
+    #if defined BODY
+        system_index(odrive, encoder, thor, AXIS_BODY);
+        homing_system(odrive, encoder, thor, AXIS_BODY);
     #endif
 }
 
@@ -306,44 +310,85 @@ void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& t
   */
  void index_search(ODriveClass& odrive, int axis){
     // Set up odrive for homing spin
-    odrive_.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
-    odrive_.SetControlModeTraj(axis);
-    odrive_.TrapezoidalMove(axis, (CPR * (TENSION_SCALING_FACTOR));
+    odrive.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
+    odrive.SetControlModeTraj(axis);
+    odrive.TrapezoidalMove(axis, (CPR * (TENSION_SCALING_FACTOR)));
     delay(4000);
     do {
         delay(250);
-        odrive_.ReadFeedback(axis);
+        odrive.ReadFeedback(axis);
     }
     while (abs(odrive.Feedback.velocity) >= 2);
-
-
-    // read encoder
-    // reindex
-    // move to new index 0
  }
 
- void system_index(ODriveClass&, LS7366R& encoder, StormBreaker& thor, int axis){
-    odrive_.ReadFeedBack(axis);
-    int32_t encoder_count = encoder_.counterRead();
+/**
+  * @brief  Calculated the system index on startup
+  * @param  ODriveClass& odrive - ODriveClass instantiated class object
+  * @param  LS7366R& encoder - LS7366R encoder instantiated class object
+  * @param  StormBreaker& thor - StormBreaker instantiated class object
+  * @param  int axis - axis to be configured
+  * @return void
+  */
+ void system_index(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor, int axis){
+    odrive.ReadFeedback(axis);
+    int32_t encoder_count = encoder.counterRead();
 
     if (encoder_count < 0)
-        thor_.SystemIndex.encoder_positive = false;
+        thor.SystemIndex.encoder_positive = false;
     else
-        thor_.SystemIndex.encoder_positive = true;
+        thor.SystemIndex.encoder_positive = true;
 
-    // calculate + store system index
+    #if defined HEAD || defined BOTH_FOR_TESTING
+        thor.SystemIndex.pan_index = (odrive.Feedback.position - (abs(encoder_count) * SYSTEM_CORRELATION));
+        #ifdef TESTING
+            SerialUSB.print("Pan Index: ");
+            SerialUSB.println(thor.SystemIndex.pan_index);
+        #endif
+    #endif
+
+    #if defined BODY
+        thor.SystemIndex.tilt_index = (odrive.Feedback.position - (abs(encoder_count) * SYSTEM_CORRELATION));
+        #ifdef TESTING
+            SerialUSB.print("Tilt Index: ");
+            SerialUSB.println(thor.SystemIndex.tilt_index);
+        #endif
+    #endif
  }
 
 /**
   * @brief  Homes one system axis
-  * @param  ODriveClass& odrive - ODriveClass instantiated object
+  * @param  ODriveClass& odrive - ODriveClass instantiated class object
+  * @param  LS7366R& encoder - LS7366R encoder instantiated class object
+  * @param  StormBreaker& thor - StormBreaker instantiated class object
   * @param  int axis - axis to be configured
   * @return void
   */
- void homing_system(ODriveClass& odrive, int axis){
-     // traj control mode?
-     // move to 0
-     // delay
-     // read encoder
-     // do math for encoder position
+ void homing_system(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor, int axis){
+
+    #ifdef BODY
+        int32_t index = thor.SystemIndex.tilt_index;
+    #endif
+
+    #if defined HEAD || defined BOTH_FOR_TESTING
+        int32_t index = thor.SystemIndex.pan_index;
+    #endif
+
+    // odrive_.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
+    // odrive_.SetControlModeTraj(axis);
+
+    odrive.TrapezoidalMove(axis, index);
+    delay(4000);
+    do {
+        delay(250);
+        odrive.ReadFeedback(axis);
+    }
+    while (abs(odrive.Feedback.velocity) >= 2);
+
+    #ifdef TESTING
+        int32_t encoder_count = encoder.counterRead();
+        SerialUSB.print("Homed Encoder Count: ");
+        SerialUSB.println(encoder_count);
+        SerialUSB.println();
+    #endif
+
  }
