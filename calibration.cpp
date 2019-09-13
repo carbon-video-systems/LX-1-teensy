@@ -33,11 +33,6 @@
 
 #define HOMING_VELOCITY     4096    //counts per second
 
-// Scale from one odrive encoder count to one system encoder count
-#define MAGNETIC_ENCODER_TOTAL  97600
-#define MAGNETIC_ENCODER_HALF   48800
-#define SYSTEM_CORRELATION  0.3525
-
 // ODrive PID Calibration
 #define PID_POS_GAIN_BODY        20.0f       //default 20
 #define PID_VEL_GAIN_BODY        0.0005f     //default 0.0005
@@ -58,6 +53,12 @@
 #define ENCODER_USE_INDEX       true
 #define ENCODER_PRE_CALIBRATED  true
 #define MOTOR_PRE_CALIBRATED    true
+
+// Scale from one odrive encoder count to one system encoder count
+#define REINDEX_THRESHOLD       30
+#define MAGNETIC_ENCODER_TOTAL  97600
+#define MAGNETIC_ENCODER_HALF   48800
+#define SYSTEM_CORRELATION      0.3525
 
 /* Functions------------------------------------------------------------*/
 /**
@@ -288,14 +289,14 @@ void parameter_configuration(ODriveClass& odrive, int axis)
   */
 void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor){
     // Homing the odrive system
-    #if defined HEAD || defined BOTH_FOR_TESTING
-        int axis = AXIS_HEAD;
-    #else
+    #if defined BODY || defined BOTH_FOR_TESTING
         int axis = AXIS_BODY;
+    #else
+        int axis = AXIS_HEAD;
     #endif
 
     startup_index_search(odrive, axis);
-    system_direction(encoder, thor, axis);
+    system_direction(encoder, thor);
     startup_index(odrive, encoder, thor, axis);
     homing_system(odrive, thor.SystemIndex.pan_index, axis, true);
 
@@ -333,10 +334,9 @@ void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& t
   * @brief  Identifies the system spin direction on startup
   * @param  LS7366R& encoder - LS7366R encoder instantiated class object
   * @param  StormBreaker& thor - StormBreaker instantiated class object
-  * @param  int axis - axis to be configured
   * @return void
   */
- void system_direction(LS7366R& encoder, StormBreaker& thor, int axis){
+ void system_direction(LS7366R& encoder, StormBreaker& thor){
 
     int32_t encoder_count = encoder.counterRead();
 
@@ -359,16 +359,16 @@ void startup_index(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor, in
     odrive.ReadFeedback(axis);
     int32_t encoder_count = encoder.counterRead();
 
-    #if defined HEAD || defined BOTH_FOR_TESTING
-        thor.SystemIndex.pan_index = system_reindex(odrive.Feedback.position, encoder_count, thor.SystemIndex.encoder_direction);
+    #if defined BODY || defined BOTH_FOR_TESTING
+        thor.SystemIndex.pan_index = system_reindex(odrive.Feedback.position, encoder_count, 0, thor.SystemIndex.encoder_direction);
         #ifdef TESTING
             SerialUSB.print("Pan Index: ");
             SerialUSB.println(thor.SystemIndex.pan_index);
         #endif
     #endif
 
-    #if defined BODY
-        thor.SystemIndex.tilt_index = system_reindex(odrive.Feedback.position, encoder_count, thor.SystemIndex.encoder_direction);
+    #if defined HEAD
+        thor.SystemIndex.tilt_index = system_reindex(odrive.Feedback.position, encoder_count, 0, thor.SystemIndex.encoder_direction);
         #ifdef TESTING
             SerialUSB.print("Tilt Index: ");
             SerialUSB.println(thor.SystemIndex.tilt_index);
@@ -383,7 +383,7 @@ void startup_index(ODriveClass& odrive, LS7366R& encoder, StormBreaker& thor, in
   * @param  bool direction - direction that the system is installed
   * @return int32_t index - new calculated system index
   */
-int32_t system_reindex(float odrive_position, int32_t encoder_count, bool direction){
+int32_t system_reindex(float odrive_position, int32_t encoder_count, int32_t old_index, bool direction){
 
     int32_t index;
     int32_t abs_encoder_count = abs(encoder_count);
@@ -391,16 +391,24 @@ int32_t system_reindex(float odrive_position, int32_t encoder_count, bool direct
     if (direction){
         if (abs_encoder_count <= MAGNETIC_ENCODER_HALF)
             index = odrive_position - (encoder_count * SYSTEM_CORRELATION);
+        else if (encoder_count >= 0)
+            index = odrive_position + ((MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
         else
-            index = odrive_position + ((- MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
+            index = odrive_position + ((-MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
     } else{
         if (abs_encoder_count <= MAGNETIC_ENCODER_HALF)
             index = odrive_position + (encoder_count * SYSTEM_CORRELATION);
-        else
+        else if (encoder_count >= 0)
             index = odrive_position - ((MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
+        else
+            index = odrive_position - ((- MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
     }
 
-    return index;
+    // reindex threshold check - will only reindex above a certain offset threshold
+    if (abs(index - old_index) > REINDEX_THRESHOLD)
+        return index;
+    else
+        return old_index;
 }
 
 /**

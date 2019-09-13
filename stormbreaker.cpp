@@ -144,10 +144,12 @@ void StormBreaker::ArtNetPan()
                 odrive_.ReadFeedback(AXIS_BODY);
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_BODY);
-                // Read system position
-                int32_t count = encoder_.counterRead();
                 odrive_.SetControlModeTraj(AXIS_BODY);
-                // Recompute index position
+                // Read system position
+                int32_t encoder_count = encoder_.counterRead();
+                odrive_.ReadFeedback(AXIS_BODY);
+                // recompute and check index position
+                SystemIndex.pan_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.pan_index, SystemIndex.encoder_direction);
             }
             //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
             odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540 + SystemIndex.pan_index);
@@ -158,9 +160,12 @@ void StormBreaker::ArtNetPan()
                 odrive_.ReadFeedback(AXIS_BODY);
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_BODY);
-                // Read system position
                 odrive_.SetControlModeTraj(AXIS_BODY);
-                // Recompute index position
+                // Read system position
+                int32_t encoder_count = encoder_.counterRead();
+                odrive_.ReadFeedback(AXIS_BODY);
+                // recompute and check index position
+                SystemIndex.pan_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.pan_index, SystemIndex.encoder_direction);
             }
             //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
             odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_360 + SystemIndex.pan_index);
@@ -178,9 +183,11 @@ void StormBreaker::ArtNetPan()
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_BODY);
                 // Read system position
-                // Recompute index position
-                odrive_.SetControlModeTraj(AXIS_BODY);
-                // odrive_.TrapezoidalMove(AXIS_BODY, 0); // spin to closest index position
+                int32_t encoder_count = encoder_.counterRead();
+                odrive_.ReadFeedback(AXIS_BODY);
+                // recompute and check index position
+                SystemIndex.pan_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.pan_index, SystemIndex.encoder_direction);
+                homing_system(odrive_, SystemIndex.pan_index, AXIS_BODY, false);
             }
             break;
         default: //continuous cw or ccw rotation
@@ -298,9 +305,12 @@ void StormBreaker::ArtNetTilt()
                 odrive_.ReadFeedback(AXIS_HEAD);
                 odrive_.SetPosition(AXIS_HEAD, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_HEAD);
-                // Read system position
                 odrive_.SetControlModeTraj(AXIS_HEAD);
-                // Recompute index position
+                // Read system position
+                int32_t encoder_count = encoder_.counterRead();
+                odrive_.ReadFeedback(AXIS_HEAD);
+                // recompute and check index position
+                SystemIndex.tilt_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.tilt_index, SystemIndex.encoder_direction);
             }
             //offset by half a rotation (to allow for tilting in both directions) and scale for 270 degree range
             odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_270 + SystemIndex.tilt_index);
@@ -317,9 +327,11 @@ void StormBreaker::ArtNetTilt()
                 odrive_.SetPosition(AXIS_HEAD, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_HEAD);
                 // Read system position
-                // Recompute index position
-                odrive_.SetControlModeTraj(AXIS_HEAD);
-                // odrive_.TrapezoidalMove(AXIS_HEAD, 0); // spin to closest index position
+                int32_t encoder_count = encoder_.counterRead();
+                odrive_.ReadFeedback(AXIS_HEAD);
+                // recompute and check index position
+                SystemIndex.tilt_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.tilt_index, SystemIndex.encoder_direction);
+                homing_system(odrive_, SystemIndex.pan_index, AXIS_HEAD, false);
             }
             break;
         case 129: //stop in place
