@@ -147,6 +147,8 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
 
             do {
                 current_state = odrive.readState(axis);
+                SerialUSB.print("CURRENT STATE: ");
+                SerialUSB.println(current_state);
                 delay(100);
             } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
 
@@ -321,8 +323,8 @@ void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& t
     // Set up odrive for homing spin
     odrive.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
     odrive.SetControlModeTraj(axis);
-    odrive.TrapezoidalMove(axis, (CPR * (TENSION_SCALING_FACTOR)));
-    delay(4000);
+    odrive.TrapezoidalMove(axis, ((CPR * TENSION_SCALING_FACTOR)));
+    delay(7500);
     do {
         delay(250);
         odrive.ReadFeedback(axis);
@@ -419,7 +421,7 @@ int32_t system_reindex(float odrive_position, int32_t encoder_count, int32_t old
   * @param  bool startup - startup delay status
   * @return void
   */
- void homing_system(ODriveClass& odrive, int32_t index, int axis, bool startup = false){
+ void homing_system(ODriveClass& odrive, int32_t index, int axis, bool startup){
 
     odrive.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
     odrive.SetControlModeTraj(axis);
@@ -427,7 +429,7 @@ int32_t system_reindex(float odrive_position, int32_t encoder_count, int32_t old
     odrive.TrapezoidalMove(axis, index);
 
     if (startup){
-        delay(4000);
+        delay(5000);
         do {
             delay(250);
             odrive.ReadFeedback(axis);

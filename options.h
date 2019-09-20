@@ -31,25 +31,25 @@
 #endif
 
 /* Define either BODY or HEAD for normal operation or BOTH_FOR_TESTING for testing purposes*/
-// #define BODY
+#define BODY
 // #define HEAD
-#define BOTH_FOR_TESTING
+// #define BOTH_FOR_TESTING
 
 #if defined BODY
     /* Body specific stuff */
     #define NUM_MOTORS      1
-    #define AXIS_BODY       0
+    #define AXIS_BODY       1
     #define IDENTIFIER      0xAF
 #elif defined HEAD
     /* Head specific stuff */
     #define NUM_MOTORS      1
-    #define AXIS_HEAD       1
+    #define AXIS_HEAD       0
     #define IDENTIFIER      0x50
 #elif defined BOTH_FOR_TESTING
     /* Stuff that makes testing two motors on a single ODrive work properly */
     #define NUM_MOTORS      2
-    #define AXIS_BODY       0
-    #define AXIS_HEAD       1
+    #define AXIS_BODY       1
+    #define AXIS_HEAD       0
     #define IDENTIFIER      0xB7
 #endif
 
