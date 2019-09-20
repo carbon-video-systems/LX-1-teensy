@@ -63,9 +63,9 @@ StormBreaker thor(odrive, encoder);
  */
 void setup()
 {
-    // Power on LED indicator
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
+    // YOU CANNOT USE THE BUILT IN LED > SPI SCK0 on pin 13!
+    // pinMode(LED_BUILTIN, OUTPUT);
+    // digitalWrite(LED_BUILTIN, HIGH);
 
     // ODrive uses 115200 baud
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);

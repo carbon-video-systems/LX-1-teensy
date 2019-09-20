@@ -12,7 +12,10 @@
 
 /* Functions------------------------------------------------------------*/
 void setup() {
-  // put your setup code here, to run once:
+
+    // YOU CANNOT USE THE BUILT IN LED > SPI SCK0 on pin 13!
+    // pinMode(LED_BUILTIN, OUTPUT);
+    // digitalWrite(LED_BUILTIN, HIGH);
 
     #ifdef TESTING
         SerialUSB.begin(USB_SERIAL_BAUD);
