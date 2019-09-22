@@ -71,6 +71,8 @@ void setup()
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);
 
+    odrive_serial.flush();
+
     // Pi uses 115200 baud, 8 data bits, 1 stop bit, no parity
     pi_serial.begin(PI_SERIAL_BAUD, SERIAL_8N1);
     while(!pi_serial);

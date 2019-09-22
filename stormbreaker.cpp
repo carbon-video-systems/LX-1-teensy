@@ -30,8 +30,8 @@
 #define ARTNET_PAN_TILT_SCALING_FACTOR_360   1 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 360 degrees
 #define ARTNET_PAN_TILT_SCALING_FACTOR_540   1.5 //converts ArtNet 0-65,536 to 0-(65,536*factor)count where the max value is 540 degrees
 
-#define ARTNET_PAN_TILT_SCALING_FACTOR(VEL_LIMIT) (VEL_LIMIT/256) //converts ArtNet 0-255 to 0-(255*factor)counts/s where the max value is the velocity limit
-#define ARTNET_VELOCITY_SCALING_FACTOR(VEL_LIMIT) (VEL_LIMIT/126) //converts ArtNet 2-127 or 130-255 to 0-(126*factor)counts/s where the max value is the velocity limit
+#define ARTNET_PAN_TILT_SCALING_FACTOR(VELOCITY_LIMIT) (VELOCITY_LIMIT/256) //converts ArtNet 0-255 to 0-(255*factor)counts/s where the max value is the velocity limit
+#define ARTNET_VELOCITY_SCALING_FACTOR(VELOCITY_LIMIT) (VELOCITY_LIMIT/126) //converts ArtNet 2-127 or 130-255 to 0-(126*factor)counts/s where the max value is the velocity limit
 
 /* Functions------------------------------------------------------------*/
 void StormBreaker::serviceStormBreaker()
@@ -196,7 +196,8 @@ void StormBreaker::ArtNetPan()
                 odrive_.SetVelocity(AXIS_BODY, (VEL_VEL_LIMIT - ((ArtNetBody.pan_control - 2) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             } else if((ArtNetBody.pan_control >= 130) && (ArtNetBody.pan_control <= 255)){
                 //scale based on the velocity limit CCW
-                odrive_.SetVelocity(AXIS_BODY, (-VEL_VEL_LIMIT + ((ArtNetBody.pan_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+                // odrive_.SetVelocity(AXIS_BODY, (-VEL_VEL_LIMIT + ((ArtNetBody.pan_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+                odrive_.SetVelocity(AXIS_BODY, ((129 - ArtNetBody.pan_control) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT))); //note velocity can never be zero
             }
 
             if (prev_pan_control == 0 || prev_pan_control == 1 || prev_pan_control == 129)
@@ -345,7 +346,8 @@ void StormBreaker::ArtNetTilt()
                 odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
                 //scale based on the velocity limit CCW
-                odrive_.SetVelocity(AXIS_HEAD, (-VEL_VEL_LIMIT + ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
+                odrive_.SetVelocity(AXIS_BODY, ((129 - ArtNetHead.tilt_control) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT))); //note velocity can never be zero
+                // odrive_.SetVelocity(AXIS_HEAD, (-VEL_VEL_LIMIT + ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             }
             if (prev_tilt_control == 0 || prev_tilt_control == 128)
                 odrive_.SetControlModeVel(AXIS_HEAD);
@@ -360,17 +362,35 @@ void StormBreaker::ArtNetTilt()
 
 void StormBreaker::ArtNetPanTiltSpeed()
 {
+    static bool startup = true;
     static uint8_t prev_pan_tilt_speed = 0;
 
     #if defined BODY || defined BOTH_FOR_TESTING
-        if (ArtNetBody.pan_tilt_speed != prev_pan_tilt_speed){
-            odrive_.ConfigureTrajVelLimit(AXIS_BODY, (TRAJ_VEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+        if (startup == true){
+            odrive_.ConfigureTrajAccelLimit(AXIS_BODY, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
+            odrive_.ConfigureTrajDecelLimit(AXIS_BODY, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
+            odrive_.ConfigureTrajVelLimit(AXIS_BODY, TRAJ_VEL_LIMIT);
             prev_pan_tilt_speed = ArtNetBody.pan_tilt_speed;
+            startup = false;
+        }
+        if (ArtNetBody.pan_tilt_speed != prev_pan_tilt_speed){
+            odrive_.ConfigureTrajAccelLimit(AXIS_BODY, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
+            odrive_.ConfigureTrajDecelLimit(AXIS_BODY, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
+            prev_pan_tilt_speed = ArtNetBody.pan_tilt_speed;
+
         }
     #endif
     #if defined HEAD || defined BOTH_FOR_TESTING
+        if (startup == true){
+            odrive_.ConfigureTrajAccelLimit(AXIS_HEAD, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
+            odrive_.ConfigureTrajDecelLimit(AXIS_HEAD, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
+            odrive_.ConfigureTrajVelLimit(AXIS_HEAD, TRAJ_VEL_LIMIT); //note velocity can never be zero
+            prev_pan_tilt_speed = ArtNetHead.pan_tilt_speed;
+            startup = false;
+        }
         if (ArtNetHead.pan_tilt_speed != prev_pan_tilt_speed){
-            odrive_.ConfigureTrajVelLimit(AXIS_HEAD, (TRAJ_VEL_LIMIT - (ArtNetHead.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_VEL_LIMIT)))); //note velocity can never be zero
+            odrive_.ConfigureTrajAccelLimit(AXIS_HEAD, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
+            odrive_.ConfigureTrajDecelLimit(AXIS_HEAD, (TRAJ_ACCEL_LIMIT - (ArtNetBody.pan_tilt_speed * ARTNET_PAN_TILT_SCALING_FACTOR(TRAJ_ACCEL_LIMIT)))); //note velocity can never be zero
             prev_pan_tilt_speed = ArtNetHead.pan_tilt_speed;
         }
     #endif

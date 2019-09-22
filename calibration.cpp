@@ -34,9 +34,9 @@
 #define HOMING_VELOCITY     4096    //counts per second
 
 // ODrive PID Calibration
-#define PID_POS_GAIN_BODY        20.0f       //default 20
+#define PID_POS_GAIN_BODY        50.0f       //default 20
 #define PID_VEL_GAIN_BODY        0.0005f     //default 0.0005
-#define PID_VEL_INT_GAIN_BODY    0.001f     //default 0.001
+#define PID_VEL_INT_GAIN_BODY    0.0025f     //default 0.001
 
 #define PID_POS_GAIN_HEAD        50.0f       //default 20
 #define PID_VEL_GAIN_HEAD        0.0005f     //default 0.0005
@@ -55,10 +55,10 @@
 #define MOTOR_PRE_CALIBRATED    true
 
 // Scale from one odrive encoder count to one system encoder count
-#define REINDEX_THRESHOLD       30
+#define REINDEX_THRESHOLD       270 // +/- one degree
 #define MAGNETIC_ENCODER_TOTAL  97600
 #define MAGNETIC_ENCODER_HALF   48800
-#define SYSTEM_CORRELATION      0.3525
+#define SYSTEM_CORRELATION      0.35756 // (CPR * TENSION_SCALING_FACTOR / MAGNETIC_ENCODER_TOTAL)
 
 /* Functions------------------------------------------------------------*/
 /**
@@ -147,10 +147,14 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
 
             do {
                 current_state = odrive.readState(axis);
-                SerialUSB.print("CURRENT STATE: ");
-                SerialUSB.println(current_state);
+                #ifdef TESTING
+                    SerialUSB.print("CURRENT STATE: ");
+                    SerialUSB.println(current_state);
+                #endif
                 delay(100);
             } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
+
+            current_state = odrive.readState(axis);
 
             #ifdef TESTING
                 SerialUSB.print("ODrive ");
@@ -303,6 +307,7 @@ void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& t
     homing_system(odrive, thor.SystemIndex.pan_index, axis, true);
 
     #ifdef TESTING
+        delay(100);
         odrive.ReadFeedback(axis);
         int32_t encoder_count = encoder.counterRead();
         SerialUSB.print("ODrive encoder count: ");
@@ -324,7 +329,7 @@ void lx1_startup_sequence(ODriveClass& odrive, LS7366R& encoder, StormBreaker& t
     odrive.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
     odrive.SetControlModeTraj(axis);
     odrive.TrapezoidalMove(axis, ((CPR * TENSION_SCALING_FACTOR)));
-    delay(7500);
+    delay(8250);
     do {
         delay(250);
         odrive.ReadFeedback(axis);
@@ -429,9 +434,9 @@ int32_t system_reindex(float odrive_position, int32_t encoder_count, int32_t old
     odrive.TrapezoidalMove(axis, index);
 
     if (startup){
-        delay(5000);
+        delay(1000);
         do {
-            delay(250);
+            delay(200);
             odrive.ReadFeedback(axis);
         }
         while (abs(odrive.Feedback.velocity) >= 2);
