@@ -20,5 +20,6 @@ UART connection to an ODrive system.
 9/09/19: Added magnetic encoder functionality.
 
 ## TODO
-Integrate encoder homing into main system. \
-More robust error check/handling.
+Refactor homing capabilities. \
+Refactor index calculations.\
+Look into "crosses initialization" case statement error.
