@@ -22,16 +22,18 @@
 #include <HardwareSerial.h>
 
 #include "ODriveLib.h"
+#include "LS7366R.h"
+#include "stormbreaker.h"
 #include "options.h"
 
 /* Constants -----------------------------------------------------------*/
 // ODrive Trajectory Control Limits
-#define TRAJ_VEL_LIMIT      99840.0f //needs to be a factor of 256 to work nicely with pan_tilt_speed calculations
-#define TRAJ_ACCEL_LIMIT    25000.0f
-#define TRAJ_DECEL_LIMIT    25000.0f
+#define TRAJ_VEL_LIMIT      128000.0f //needs to be a factor of 256 to work nicely with pan_tilt_speed calculation
+#define TRAJ_ACCEL_LIMIT    202400.0f
+#define TRAJ_DECEL_LIMIT    202400.0f
 
 // ODrive Velocity Control Limits
-#define VEL_VEL_LIMIT       99918.0f //needs to be a factor of 126 to work nicely with velocity calculations
+#define VEL_VEL_LIMIT       103320.0f //needs to be a factor of 126 to work nicely with velocity calculations
 
 /* Functions------------------------------------------------------------*/
 void odrive_startup_sequence(ODriveClass& );
@@ -41,9 +43,12 @@ void encoder_calibrate(ODriveClass&, int);
 void motor_calibrate(ODriveClass&, int);
 void parameter_configuration(ODriveClass&, int);
 
-void lx1_startup_sequence(ODriveClass&);
-void startup_homing(ODriveClass&, int);
+void lx1_startup_sequence(ODriveClass&, LS7366R&, StormBreaker&);
+void startup_index_search(ODriveClass&, int);
+void system_direction(LS7366R&, StormBreaker&);
+void startup_index(ODriveClass&, LS7366R&, StormBreaker&, int);
 
-void homing_system(ODriveClass&, int);
+int32_t system_reindex(float, int32_t, int32_t, bool);
+void homing_system(ODriveClass&, int32_t, int, bool);
 
 #endif //CALIBRATION_H
