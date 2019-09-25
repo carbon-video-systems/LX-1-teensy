@@ -43,18 +43,20 @@ void Debug::serviceDebug()
         break;
     // State read Commands
     case 'c':
+    {
         SerialUSB.println("Current state");
         #if defined BODY || defined BOTH_FOR_TESTING
             int32_t body = odrive_.readState(AXIS_BODY);
             SerialUSB.print("BODY: ");
             SerialUSB.println(body);
-        #endif
+        #endif  // BODY || BOTH_FOR_TESTING
         #if defined HEAD || defined BOTH_FOR_TESTING
             int32_t head = odrive_.readState(AXIS_HEAD);
             SerialUSB.print("HEAD: ");
             SerialUSB.println(head);
-        #endif
+        #endif  // HEAD || BOTH_FOR_TESTING
         break;
+    }
     case 'f':
         #if defined BODY || defined BOTH_FOR_TESTING
             odrive_.ReadFeedback(AXIS_BODY);
@@ -74,10 +76,12 @@ void Debug::serviceDebug()
         #endif
         break;
     case 'v':
+    {
         SerialUSB.print("BUS VOLTAGE: ");
         float voltage = odrive_.BusVoltage();
         SerialUSB.println(voltage);
         break;
+    }
     case '\n':
         break;
     case '\r':

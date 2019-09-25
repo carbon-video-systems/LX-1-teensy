@@ -16,8 +16,14 @@ UART connection to an ODrive system.
 7/03/19: Changed pan and tilt calculations. \
 7/04/19: Added message size error checking. \
 7/15/19: Handled mode switch cases. \
-7/18/19: Added power LED indicator.
+7/18/19: Added power LED indicator.\
+9/19/19: Removed power LED indicator.\
+9/19/19: Added magnetic encoder framework.\
+9/20/19: Added magnetic encoder driver.\
+9/20/19: Integrated magnetic encoder homing logic.\
+9/25/19: Removed magnetic encoder logic > new approach.\
 
 ## TODO
-Introduce homing capabilities. \
-More robust error check/handling.
+Refactor homing capabilities. \
+Refactor index calculations.\
+Look into "crosses initialization" case statement error.
