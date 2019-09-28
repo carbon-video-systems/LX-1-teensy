@@ -34,6 +34,10 @@
 // ODrive Velocity Control Limits
 #define VEL_VEL_LIMIT       103320.0f //needs to be a factor of 126 to work nicely with velocity calculations
 
+// Homing
+#define HALL_SENSOR 36
+#define HALL_SENSOR_OFFSET 2
+
 /* Functions------------------------------------------------------------*/
 void odrive_startup_sequence(ODriveClass& );
 void odrive_startup_check(ODriveClass& , bool*);
@@ -43,11 +47,10 @@ void motor_calibrate(ODriveClass&, int);
 void parameter_configuration(ODriveClass&, int);
 
 void lx1_startup_sequence(ODriveClass&, StormBreaker&);
-void startup_index_search(ODriveClass&, int);
-void system_direction(StormBreaker&);
-// void startup_index(ODriveClass&, StormBreaker&, int);
+void startup_index_search(ODriveClass&, StormBreaker&, int);
+void startup_index(ODriveClass&, StormBreaker&, int);
 
-// int32_t system_reindex(float, int32_t, int32_t, bool);
-void homing_system(ODriveClass&, int32_t, int, bool);
+float system_reindex(float, int);
+void homing_system(ODriveClass&, float, int, bool);
 
 #endif //CALIBRATION_H

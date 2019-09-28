@@ -70,8 +70,9 @@ public:
     } ArtNetHead;
 
     struct SystemIndex_t {
-        int32_t pan_index;
-        int32_t tilt_index;
+        float pan_index;
+        float tilt_index;
+        int start_index;
         bool encoder_direction;
     } SystemIndex;
 
@@ -84,6 +85,7 @@ private:
     void receiveArtNetBody();
     void serviceArtNetBody();
     void ArtNetPan();
+    void pan_reindex();
     // head functions
     void receiveArtNetHead();
     void serviceArtNetHead();
@@ -92,6 +94,7 @@ private:
     void ArtNetZoom();
     void ArtNetFocus();
     void ArtNetTilt();
+    void tilt_reindex();
     // common functions
     void ArtNetPanTiltSpeed();
     void ArtNetPowerSpecialFunctions();

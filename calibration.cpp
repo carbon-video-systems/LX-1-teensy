@@ -16,6 +16,7 @@
 
 /* Includes-------------------------------------------------------------*/
 #include <Arduino.h>
+#include <math.h>
 
 #include "calibration.h"
 #include "stormbreaker.h"
@@ -43,7 +44,7 @@
 #define PID_VEL_INT_GAIN_HEAD    0.0025f     //default 0.001
 
 // ODrive startup settings
-#define STARTUP_TIMEOUT                     20000   // 20 seconds in millis
+#define STARTUP_TIMEOUT                     30000   // 20 seconds in millis
 #define STARTUP_MOTOR_CALIBRATION           false
 #define STARTUP_ENCODER_SEARCH              true
 #define STARTUP_ENCODER_OFFSET_CALIBRATION  false
@@ -297,17 +298,19 @@ void parameter_configuration(ODriveClass& odrive, int axis)
   */
 void lx1_startup_sequence(ODriveClass& odrive, StormBreaker& thor){
     // Homing the odrive system
-    #if defined HEAD || defined BOTH_FOR_TESTING
-        int axis = AXIS_HEAD;
-    #else
+    #if defined BODY || defined BOTH_FOR_TESTING
         int axis = AXIS_BODY;
+    #else
+        int axis = AXIS_HEAD;
     #endif
 
-    startup_index_search(odrive, axis);
-    // system_direction(thor);
-    // startup_index(odrive, encoder, thor, axis);
+    startup_index_search(odrive, thor, axis);
 
-    homing_system(odrive, thor.SystemIndex.pan_index, axis, true);
+    #if defined BODY || defined BOTH_FOR_TESTING
+        homing_system(odrive, thor.SystemIndex.pan_index, axis, true);
+    #else
+        homing_system(odrive, thor.SystemIndex.tilt_index, axis, true);
+    #endif
 
     #ifdef TESTING
         delay(100);
@@ -324,35 +327,26 @@ void lx1_startup_sequence(ODriveClass& odrive, StormBreaker& thor){
   * @param  int axis - axis to be configured
   * @return void
   */
- void startup_index_search(ODriveClass& odrive, int axis){
+ void startup_index_search(ODriveClass& odrive, StormBreaker& thor, int axis){
     // Set up odrive for homing spin
     odrive.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
     odrive.SetControlModeTraj(axis);
     odrive.TrapezoidalMove(axis, ((CPR * TENSION_SCALING_FACTOR)));
+
     // SEARCH FOR MAG PULSE
-    delay(8250);
-    do {
-        delay(250);
-        odrive.ReadFeedback(axis);
+    // polling based search:
+    bool index_pulse = false;
+    elapsedMillis timeout;
+
+    while (!index_pulse){
+        index_pulse = (digitalRead(HALL_SENSOR)== HIGH);
+
+        if (index_pulse || timeout >= STARTUP_TIMEOUT){
+            startup_index(odrive, thor, axis);
+            break;
+        }
     }
-    while (abs(odrive.Feedback.velocity) >= 2);
  }
-
-/**
-  * @brief  Identifies the system spin direction on startup
-  * @param  LS7366R& encoder - LS7366R encoder instantiated class object
-  * @param  StormBreaker& thor - StormBreaker instantiated class object
-  * @return void
-  */
-//  void system_direction(LS7366R& encoder, StormBreaker& thor){
-
-//     int32_t encoder_count = encoder.counterRead();
-
-//     if (encoder_count < 0)
-//         thor.SystemIndex.encoder_direction = false;
-//     else
-//         thor.SystemIndex.encoder_direction = true;
-//  }
 
 /**
   * @brief  Calculates the system index on startup
@@ -361,72 +355,70 @@ void lx1_startup_sequence(ODriveClass& odrive, StormBreaker& thor){
   * @param  int axis - axis to be indexed
   * @return void
   */
-// void startup_index(ODriveClass& odrive, StormBreaker& thor, int axis){
+void startup_index(ODriveClass& odrive, StormBreaker& thor, int axis){
 
-//     odrive.ReadFeedback(axis);
-//     int32_t encoder_count = encoder.counterRead();
+    odrive.ReadFeedback(axis);
 
-//     #if defined BODY || defined BOTH_FOR_TESTING
-//         thor.SystemIndex.pan_index = system_reindex(odrive.Feedback.position, encoder_count, 0, thor.SystemIndex.encoder_direction);
-//         #ifdef TESTING
-//             SerialUSB.print("Pan Index: ");
-//             SerialUSB.println(thor.SystemIndex.pan_index);
-//         #endif
-//     #endif
+    thor.SystemIndex.start_index = int(odrive.Feedback.position / CPR) + HALL_SENSOR_OFFSET;
 
-//     #if defined HEAD
-//         thor.SystemIndex.tilt_index = system_reindex(odrive.Feedback.position, encoder_count, 0, thor.SystemIndex.encoder_direction);
-//         #ifdef TESTING
-//             SerialUSB.print("Tilt Index: ");
-//             SerialUSB.println(thor.SystemIndex.tilt_index);
-//         #endif
-//     #endif
-//  }
+    #if defined BODY || defined BOTH_FOR_TESTING
+        // thor.SystemIndex.pan_index = system_reindex(odrive.Feedback.position, 0, thor.SystemIndex.encoder_direction);
+        thor.SystemIndex.pan_index = thor.SystemIndex.start_index * CPR;
+        #ifdef TESTING
+            SerialUSB.print("Pan Index: ");
+            SerialUSB.println(thor.SystemIndex.pan_index);
+        #endif
+    #endif
+
+    #if defined HEAD
+        // thor.SystemIndex.tilt_index = system_reindex(odrive.Feedback.position, 0, thor.SystemIndex.encoder_direction);
+        thor.SystemIndex.tilt_index = thor.SystemIndex.start_index * CPR;
+        #ifdef TESTING
+            SerialUSB.print("Tilt Index: ");
+            SerialUSB.println(thor.SystemIndex.tilt_index);
+        #endif
+    #endif
+}
 
 /**
   * @brief  Recalculates the system index
   * @param  float odrive_position - position of the odrive encoder
-  * @param  int32_t encoder_count - position of the system magnetic encoder
-  * @param  bool direction - direction that the system is installed
-  * @return int32_t index - new calculated system index
+  * @param  int start_index -
+  * @return float index - new calculated system index
   */
-// int32_t system_reindex(float odrive_position, int32_t encoder_count, int32_t old_index, bool direction){
+float system_reindex(float odrive_position, int start_index){
 
-//     int32_t index;
-//     int32_t abs_encoder_count = abs(encoder_count);
+    float index;
+    float rotations = (odrive_position / CPR);
+    float rotational_offset = fmodf((rotations - start_index), TENSION_SCALING_FACTOR);
+    int trunc_rotational_offset = int(rotational_offset);
 
-//     if (direction){
-//         if (abs_encoder_count <= MAGNETIC_ENCODER_HALF)
-//             index = odrive_position - (encoder_count * SYSTEM_CORRELATION);
-//         else if (encoder_count >= 0)
-//             index = odrive_position + ((MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
-//         else
-//             index = odrive_position + ((-MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
-//     } else{
-//         if (abs_encoder_count <= MAGNETIC_ENCODER_HALF)
-//             index = odrive_position + (encoder_count * SYSTEM_CORRELATION);
-//         else if (encoder_count >= 0)
-//             index = odrive_position - ((MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
-//         else
-//             index = odrive_position - ((- MAGNETIC_ENCODER_TOTAL - encoder_count) * SYSTEM_CORRELATION);
-//     }
+    if (abs(rotational_offset) < (TENSION_SCALING_FACTOR / 2))
+        index = (int(rotations) - trunc_rotational_offset) * CPR;
+    else if (rotational_offset >= (TENSION_SCALING_FACTOR / 2))
+        index = (int(rotations) + TENSION_SCALING_FACTOR - trunc_rotational_offset) * CPR;
+    else
+        index = (int(rotations) - TENSION_SCALING_FACTOR - trunc_rotational_offset) * CPR;
 
-//     // reindex threshold check - will only reindex above a certain offset threshold
-//     if (abs(index - old_index) > REINDEX_THRESHOLD)
-//         return index;
-//     else
-//         return old_index;
-// }
+    #ifdef TESTING
+        SerialUSB.print("New index ");
+        SerialUSB.print(index);
+        SerialUSB.print(" at rotations = ");
+        SerialUSB.println(index/CPR);
+    #endif
+
+    return index;
+}
 
 /**
   * @brief  Homes one system axis
   * @param  ODriveClass& odrive - ODriveClass instantiated class object
-  * @param  int32_t index - index to home the system to
+  * @param  float index - index to home the system to
   * @param  int axis - axis to be configured
   * @param  bool startup - startup delay status
   * @return void
   */
- void homing_system(ODriveClass& odrive, int32_t index, int axis, bool startup){
+ void homing_system(ODriveClass& odrive, float index, int axis, bool startup){
 
     odrive.ConfigureTrajAccelLimit(axis, HOMING_VELOCITY);
     odrive.ConfigureTrajDecelLimit(axis, HOMING_VELOCITY);

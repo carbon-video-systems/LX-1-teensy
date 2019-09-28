@@ -145,11 +145,8 @@ void StormBreaker::ArtNetPan()
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_BODY);
                 odrive_.SetControlModeTraj(AXIS_BODY);
-                // Read system position
-                // int32_t encoder_count = encoder_.counterRead();
-                odrive_.ReadFeedback(AXIS_BODY);
-                // recompute and check index position
-                // SystemIndex.pan_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.pan_index, SystemIndex.encoder_direction);
+                // Reindex
+                pan_reindex();
             }
             //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
             odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540 + SystemIndex.pan_index);
@@ -161,11 +158,8 @@ void StormBreaker::ArtNetPan()
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_BODY);
                 odrive_.SetControlModeTraj(AXIS_BODY);
-                // Read system position
-                // int32_t encoder_count = encoder_.counterRead();
-                odrive_.ReadFeedback(AXIS_BODY);
-                // recompute and check index position
-                // SystemIndex.pan_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.pan_index, SystemIndex.encoder_direction);
+                // Reindex
+                pan_reindex();
             }
             //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
             odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_360 + SystemIndex.pan_index);
@@ -182,11 +176,8 @@ void StormBreaker::ArtNetPan()
                 odrive_.ReadFeedback(AXIS_BODY);
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_BODY);
-                // Read system position
-                // int32_t encoder_count = encoder_.counterRead();
-                odrive_.ReadFeedback(AXIS_BODY);
-                // recompute and check index position
-                // SystemIndex.pan_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.pan_index, SystemIndex.encoder_direction);
+                // Reindex
+                pan_reindex();
                 homing_system(odrive_, SystemIndex.pan_index, AXIS_BODY, false);
             }
             break;
@@ -207,6 +198,13 @@ void StormBreaker::ArtNetPan()
     prev_pan_control = ArtNetBody.pan_control;
     prev_pan = ArtNetBody.pan;
     }
+}
+
+// PAN reindexing
+void StormBreaker::pan_reindex()
+{
+    odrive_.ReadFeedback(AXIS_BODY);
+    SystemIndex.pan_index = system_reindex(odrive_.Feedback.position, SystemIndex.start_index);
 }
 
 //
@@ -307,11 +305,8 @@ void StormBreaker::ArtNetTilt()
                 odrive_.SetPosition(AXIS_HEAD, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_HEAD);
                 odrive_.SetControlModeTraj(AXIS_HEAD);
-                // Read system position
-                // int32_t encoder_count = encoder_.counterRead();
-                odrive_.ReadFeedback(AXIS_HEAD);
-                // recompute and check index position
-                // SystemIndex.tilt_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.tilt_index, SystemIndex.encoder_direction);
+                // Reindex
+                tilt_reindex();
             }
             //offset by half a rotation (to allow for tilting in both directions) and scale for 270 degree range
             odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_270 + SystemIndex.tilt_index);
@@ -327,12 +322,8 @@ void StormBreaker::ArtNetTilt()
                 odrive_.ReadFeedback(AXIS_HEAD);
                 odrive_.SetPosition(AXIS_HEAD, odrive_.Feedback.position);
                 odrive_.SetControlModePos(AXIS_HEAD);
-                // Read system position
-                // int32_t encoder_count = encoder_.counterRead();
-                odrive_.ReadFeedback(AXIS_HEAD);
-                // recompute and check index position
-                // SystemIndex.tilt_index = system_reindex(odrive_.Feedback.position, encoder_count, SystemIndex.tilt_index, SystemIndex.encoder_direction);
-                homing_system(odrive_, SystemIndex.pan_index, AXIS_HEAD, false);
+                // Reindex
+                tilt_reindex();
             }
             break;
         case 129: //stop in place
@@ -357,6 +348,14 @@ void StormBreaker::ArtNetTilt()
     prev_tilt_control = ArtNetHead.tilt_control;
     prev_tilt = ArtNetHead.tilt;
 }
+
+// TILT reindexing
+void StormBreaker::tilt_reindex()
+{
+    odrive_.ReadFeedback(AXIS_HEAD);
+    SystemIndex.tilt_index = system_reindex(odrive_.Feedback.position, SystemIndex.start_index);
+}
+
 //
 #endif
 

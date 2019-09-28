@@ -61,6 +61,8 @@ void setup()
     // pinMode(LED_BUILTIN, OUTPUT);
     // digitalWrite(LED_BUILTIN, HIGH);
 
+    pinMode(HALL_SENSOR, INPUT);
+
     // ODrive uses 115200 baud
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);
