@@ -43,6 +43,7 @@
 #define PID_VEL_INT_GAIN_HEAD    0.0025f     //default 0.001
 
 // ODrive startup settings
+#define STARTUP_TIMEOUT                     20000   // 20 seconds in millis
 #define STARTUP_MOTOR_CALIBRATION           false
 #define STARTUP_ENCODER_SEARCH              true
 #define STARTUP_ENCODER_OFFSET_CALIBRATION  false
@@ -145,6 +146,8 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
         for (int axis = AXIS_HEAD; axis < (NUM_MOTORS + AXIS_HEAD); axis++) {
     #endif
 
+            elapsedMillis timeout;
+
             do {
                 current_state = odrive.readState(axis);
                 #ifdef TESTING
@@ -152,7 +155,7 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
                     SerialUSB.println(current_state);
                 #endif
                 delay(100);
-            } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE);
+            } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE && timeout <= STARTUP_TIMEOUT);
 
             current_state = odrive.readState(axis);
 
