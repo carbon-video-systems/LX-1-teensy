@@ -125,8 +125,8 @@ void StormBreaker::receiveArtNetBody()
 
 void StormBreaker::serviceArtNetBody()
 {
-    ArtNetPan();
     ArtNetPanTiltSpeed();
+    ArtNetPan();
     ArtNetPowerSpecialFunctions();
 }
 
@@ -147,6 +147,12 @@ void StormBreaker::ArtNetPan()
                 odrive_.SetControlModeTraj(AXIS_BODY);
                 // Reindex
                 pan_reindex();
+                /*
+                odrive_.SetVelocity(AXIS_BODY, 0);
+                pan_reindex();
+                odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540 + SystemIndex.pan_index);
+                odrive_.SetControlModeTraj(AXIS_BODY);
+                */
             }
             //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
             odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540 + SystemIndex.pan_index);
@@ -252,8 +258,8 @@ void StormBreaker::serviceArtNetHead()
     ArtNetIris();
     ArtNetZoom();
     ArtNetFocus();
-    ArtNetTilt();
     ArtNetPanTiltSpeed();
+    ArtNetTilt();
     ArtNetPowerSpecialFunctions();
 }
 
