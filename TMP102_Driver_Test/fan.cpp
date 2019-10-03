@@ -37,6 +37,12 @@ TMP102 temp_sensor_1(TEMP_SENSOR_1_ADDRESS);
 TMP102 temp_sensor_2(TEMP_SENSOR_2_ADDRESS);
 
 /* Functions------------------------------------------------------------*/
+/**
+  * @brief  Initializes cooling fan GPIO control and the
+  *     TMP102 temperature sensor.
+  * @param  void
+  * @return void
+  */
 void initFans(void)
 {
     #ifdef TESTING
@@ -55,6 +61,11 @@ void initFans(void)
     analogWrite(FAN2_PIN, 0);
 }
 
+/**
+  * @brief  Reads temperature sensor #1 and runs fan #1 accordingly.
+  * @param  void
+  * @return void
+  */
 void runFan1(void)
 {
     static bool fanStartup1 = true;
@@ -83,6 +94,11 @@ void runFan1(void)
         }
 }
 
+/**
+  * @brief  Reads temperature sensor #2 and runs fan #2 accordingly.
+  * @param  void
+  * @return void
+  */
 void runFan2(void)
 {
     static bool fanStartup2 = true;

@@ -20,8 +20,6 @@
 #include "TMP102.h"
 #include "options.h"
 
-/* Constants -----------------------------------------------------------*/
-
 /* Functions------------------------------------------------------------*/
 void initFans(void);
 void runFan1(void);

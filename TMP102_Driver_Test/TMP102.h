@@ -1,7 +1,7 @@
 /*
- * SparkFunTMP102 Library Header File
+ * TMP102 Library Header File
  *
- * @file    SparkFunTMP102.h
+ * @file    TMP102.h
  * @author  Alex Wende @ SparkFun Electronics - April 29, 2016
  * @description   This file implements all functions of the TMP102 class.
  * Functions here range from reading the temperature from the sensor, to

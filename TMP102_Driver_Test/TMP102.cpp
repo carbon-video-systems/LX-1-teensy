@@ -1,7 +1,7 @@
 /*
- * SparkFunTMP102 Library Source File
+ * TMP102 Library Source File
  *
- * @file    SparkFunTMP102.cpp
+ * @file    TMP102.cpp
  * @author  Alex Wende @ SparkFun Electronics - April 29, 2016
  * @description   This file implements all functions of the TMP102 class.
  * Functions here range from reading the temperature from the sensor, to

@@ -4,7 +4,7 @@
 #include "options.h"
 
 /*Variables------------------------------------------------------------*/
-#define temperatureTimingThreshold  2000
+#define temperatureTimingThreshold  1500
 
 elapsedMillis temperatureCheckTiming;
 
@@ -27,10 +27,15 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
+    static bool fan_select = true;
 
     if (temperatureCheckTiming >= temperatureTimingThreshold){
-        runFan1();
-        runFan2();
+        if (fan_select)
+            runFan1();
+        else
+            runFan2();
+
+        fan_select = (!fan_select);
         temperatureCheckTiming = 0;
     }
 }
