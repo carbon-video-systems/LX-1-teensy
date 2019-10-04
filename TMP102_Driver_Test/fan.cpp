@@ -86,7 +86,7 @@ void runFan1(void)
                 analogWrite(FAN1_PIN, pwmNum(temp_sensor_data_1));
 
             #ifdef TESTING
-                SerialUSB.print("FAN ON - constrained temperature 1:  ");
+                SerialUSB.print("FAN 1 ON - constrained temperature 1:  ");
                 SerialUSB.println(temp_sensor_data_1);
             #endif
 
