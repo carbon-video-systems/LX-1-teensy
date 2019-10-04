@@ -72,26 +72,26 @@ void runFan1(void)
     float temp_sensor_data_1 = constrain(temp_sensor_1.readTempC(), MIN_FAN_TEMP, MAX_FAN_TEMP);
 
     if (temp_sensor_data_1 <= MIN_FAN_TEMP){
-            analogWrite(FAN1_PIN, 0);
-            fanStartup1 = true;
+        analogWrite(FAN1_PIN, 0);
+        fanStartup1 = true;
 
-            #ifdef TESTING
-                SerialUSB.println("Fan 1 off");
-            #endif
-        }
-        else{
-            if (fanStartup1)
-                analogWrite(FAN1_PIN, MAX_PWM_THRESHOLD);
-            else
-                analogWrite(FAN1_PIN, pwmNum(temp_sensor_data_1));
+        #ifdef TESTING
+            SerialUSB.println("Fan 1 off");
+        #endif
+    }
+    else{
+        if (fanStartup1)
+            analogWrite(FAN1_PIN, MAX_PWM_THRESHOLD);
+        else
+            analogWrite(FAN1_PIN, pwmNum(temp_sensor_data_1));
 
-            #ifdef TESTING
-                SerialUSB.print("FAN 1 ON - constrained temperature 1:  ");
-                SerialUSB.println(temp_sensor_data_1);
-            #endif
+        #ifdef TESTING
+            SerialUSB.print("FAN 1 ON - constrained temperature 1:  ");
+            SerialUSB.println(temp_sensor_data_1);
+        #endif
 
-            fanStartup1 = false;
-        }
+        fanStartup1 = false;
+    }
 }
 
 /**
