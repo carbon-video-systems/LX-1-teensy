@@ -57,9 +57,9 @@ StormBreaker thor(odrive);
  */
 void setup()
 {
-    // YOU CANNOT USE THE BUILT IN LED > SPI SCK0 on pin 13!
-    // pinMode(LED_BUILTIN, OUTPUT);
-    // digitalWrite(LED_BUILTIN, HIGH);
+    // power-on status LED
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
 
     pinMode(HALL_SENSOR, INPUT);
 

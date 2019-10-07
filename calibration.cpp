@@ -389,16 +389,21 @@ void startup_index(ODriveClass& odrive, StormBreaker& thor, int axis){
 float system_reindex(float odrive_position, int start_index){
 
     float index;
-    float rotations = (odrive_position / CPR);
-    float rotational_offset = fmodf((rotations - start_index), TENSION_SCALING_FACTOR);
-    int trunc_rotational_offset = int(rotational_offset);
+    int rotations;
 
-    if (abs(rotational_offset) < (TENSION_SCALING_FACTOR / 2))
-        index = (int(rotations) - trunc_rotational_offset) * CPR;
-    else if (rotational_offset >= (TENSION_SCALING_FACTOR / 2))
-        index = (int(rotations) + TENSION_SCALING_FACTOR - trunc_rotational_offset) * CPR;
+    if (odrive_position >= 0)
+        rotations = int(odrive_position / CPR + 0.5);
     else
-        index = (int(rotations) - TENSION_SCALING_FACTOR - trunc_rotational_offset) * CPR;
+        rotations = int(odrive_position / CPR - 0.5);
+
+    int rotational_offset = (rotations - start_index) % TENSION_SCALING_FACTOR;
+
+    if (abs(rotational_offset) < int(TENSION_SCALING_FACTOR / 2 + 0.5))
+        index = (rotations - rotational_offset) * CPR;
+    else if (rotational_offset >= int(TENSION_SCALING_FACTOR / 2 + 0.5))
+        index = (rotations - rotational_offset + TENSION_SCALING_FACTOR) * CPR;
+    else
+        index = (rotations - rotational_offset - TENSION_SCALING_FACTOR) * CPR;
 
     #ifdef TESTING
         SerialUSB.print("New index ");
