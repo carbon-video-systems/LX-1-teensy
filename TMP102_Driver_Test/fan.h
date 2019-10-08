@@ -1,9 +1,9 @@
 /*
- * Debugger Header
+ * Fan Header
  *
- * @file    debug.h
+ * @file    fan.h
  * @author  Carbon Video Systems 2019
- * @description   Debugging the Teensy/ODrive system over serial connection.
+ * @description   Cooling Fan Driver.
  *
  * @section LICENSE
  * Redistribution and use in source and binary forms, with or without
@@ -12,22 +12,17 @@
  * Distributed as-is; in accordance with the BSD 3-Clause License.
  */
 
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef FAN_H
+#define FAN_H
 
 /* Includes-------------------------------------------------------------*/
-#include "ODriveLib.h"
+#include <i2c_t3.h>
+#include "TMP102.h"
 #include "options.h"
 
 /* Functions------------------------------------------------------------*/
-class Debug {
-public:
-    Debug(ODriveClass& odrive) : odrive_(odrive) {}
+void initFans(void);
+void runFan1(void);
+void runFan2(void);
 
-    void serviceDebug();
-
-private:
-    ODriveClass& odrive_;
-};
-
-#endif //DEBUG_H
+#endif //FAN_H

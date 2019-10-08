@@ -42,10 +42,11 @@
 #ifndef ODRIVELIB_H
 #define ODRIVELIB_H
 
+/* Includes-------------------------------------------------------------*/
 #include <Arduino.h>
-
 #include "options.h"
 
+/* Functions------------------------------------------------------------*/
 class ODriveClass {
 public:
     enum AxisState_t {
