@@ -35,7 +35,7 @@
 #define VEL_VEL_LIMIT       103320.0f //needs to be a factor of 126 to work nicely with velocity calculations
 
 // Homing
-#define HALL_SENSOR 36
+#define HALL_SENSOR 35
 #define HALL_SENSOR_OFFSET 2
 
 /* Functions------------------------------------------------------------*/

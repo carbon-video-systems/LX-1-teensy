@@ -25,6 +25,7 @@
 
 /* Constants -----------------------------------------------------------*/
 #define TENSION_SCALING_FACTOR  5   // scaling factor between one motor revolution and one system revolution
+#define REINDEX_FACTOR          3   // TENSION_SCALING_FACTOR / 2 > rounded up
 
 /* Functions------------------------------------------------------------*/
 class StormBreaker {

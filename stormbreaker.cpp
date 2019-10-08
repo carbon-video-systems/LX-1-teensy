@@ -141,34 +141,28 @@ void StormBreaker::ArtNetPan()
         case 0: //pan with 540 range
             if (prev_pan_control != 0 && prev_pan_control != 1 && prev_pan_control != 129){
                 odrive_.SetVelocity(AXIS_BODY, 0);
-                odrive_.ReadFeedback(AXIS_BODY);
+                pan_reindex();
+
                 odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
-                odrive_.SetControlModePos(AXIS_BODY);
-                odrive_.SetControlModeTraj(AXIS_BODY);
-                // Reindex
-                pan_reindex();
-                /*
-                odrive_.SetVelocity(AXIS_BODY, 0);
-                pan_reindex();
                 odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540 + SystemIndex.pan_index);
                 odrive_.SetControlModeTraj(AXIS_BODY);
-                */
             }
             //offset by half a rotation (to allow for panning in both directions) and scale for 540 degree range
-            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540 + SystemIndex.pan_index);
+            else
+                odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_540 + SystemIndex.pan_index);
             break;
         case 1: //pan with 360 range
             if (prev_pan_control != 0 && prev_pan_control != 1 && prev_pan_control != 129){
                 odrive_.SetVelocity(AXIS_BODY, 0);
-                odrive_.ReadFeedback(AXIS_BODY);
-                odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
-                odrive_.SetControlModePos(AXIS_BODY);
-                odrive_.SetControlModeTraj(AXIS_BODY);
-                // Reindex
                 pan_reindex();
+
+                odrive_.SetPosition(AXIS_BODY, odrive_.Feedback.position);
+                odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_360 + SystemIndex.pan_index);
+                odrive_.SetControlModeTraj(AXIS_BODY);
             }
             //offset by half a rotation (to allow for panning in both directions) and scale for 360 degree range
-            odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_360 + SystemIndex.pan_index);
+            else
+                odrive_.TrapezoidalMove(AXIS_BODY, (ArtNetBody.pan - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_360 + SystemIndex.pan_index);
             break;
         case 128: //stop in place
             odrive_.SetVelocity(AXIS_BODY, 0); //TODO: investigate why motors are "looser" in this state
@@ -307,15 +301,15 @@ void StormBreaker::ArtNetTilt()
         case 0: //tilt with 270 range
             if (prev_tilt_control != 0 && prev_tilt_control != 128){
                 odrive_.SetVelocity(AXIS_HEAD, 0);
-                odrive_.ReadFeedback(AXIS_HEAD);
-                odrive_.SetPosition(AXIS_HEAD, odrive_.Feedback.position);
-                odrive_.SetControlModePos(AXIS_HEAD);
-                odrive_.SetControlModeTraj(AXIS_HEAD);
-                // Reindex
                 tilt_reindex();
+
+                odrive_.SetPosition(AXIS_HEAD, odrive_.Feedback.position);
+                odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_270 + SystemIndex.tilt_index);
+                odrive_.SetControlModeTraj(AXIS_HEAD);
             }
             //offset by half a rotation (to allow for tilting in both directions) and scale for 270 degree range
-            odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_270 + SystemIndex.tilt_index);
+            else
+                odrive_.TrapezoidalMove(AXIS_HEAD, (ArtNetHead.tilt - PAN_TILT_COUNT_MIDPOINT) / PAN_TILT_SCALING_FACTOR * TENSION_SCALING_FACTOR * ARTNET_PAN_TILT_SCALING_FACTOR_270 + SystemIndex.tilt_index);
             break;
         case 127: //stop in place
             odrive_.SetVelocity(AXIS_HEAD, 0);

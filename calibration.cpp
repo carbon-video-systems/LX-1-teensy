@@ -330,8 +330,9 @@ void lx1_startup_sequence(ODriveClass& odrive, StormBreaker& thor){
  void startup_index_search(ODriveClass& odrive, StormBreaker& thor, int axis){
     // Set up odrive for homing spin
     odrive.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
+    odrive.ReadFeedback(axis);
     odrive.SetControlModeTraj(axis);
-    odrive.TrapezoidalMove(axis, ((CPR * TENSION_SCALING_FACTOR)));
+    odrive.TrapezoidalMove(axis, (odrive.Feedback.position + (CPR * TENSION_SCALING_FACTOR)));
 
     // SEARCH FOR MAG PULSE
     // polling based search:
@@ -398,9 +399,9 @@ float system_reindex(float odrive_position, int start_index){
 
     int rotational_offset = (rotations - start_index) % TENSION_SCALING_FACTOR;
 
-    if (abs(rotational_offset) < int(TENSION_SCALING_FACTOR / 2 + 0.5))
+    if (abs(rotational_offset) < REINDEX_FACTOR)
         index = (rotations - rotational_offset) * CPR;
-    else if (rotational_offset >= int(TENSION_SCALING_FACTOR / 2 + 0.5))
+    else if (rotational_offset >= REINDEX_FACTOR)
         index = (rotations - rotational_offset + TENSION_SCALING_FACTOR) * CPR;
     else
         index = (rotations - rotational_offset - TENSION_SCALING_FACTOR) * CPR;
@@ -434,9 +435,11 @@ float system_reindex(float odrive_position, int start_index){
     if (startup){
         delay(1000);
         do {
-            delay(200);
+            delay(500);
             odrive.ReadFeedback(axis);
         }
-        while (abs(odrive.Feedback.velocity) >= 2);
+        while (abs(odrive.Feedback.velocity) >= 1);
+
+        delay(250);
     }
  }
