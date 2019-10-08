@@ -17,9 +17,8 @@ UART connection to an ODrive system.
 7/04/19: Added message size error checking. \
 7/15/19: Handled mode switch cases. \
 7/18/19: Added power LED indicator. \
-9/09/19: Added magnetic encoder functionality.
+9/09/19: Added magnetic encoder functionality. \
+9/18/19: Removed magnetic encoder functionality. \
+10/07/19: Refactored homing capabilities.
 
 ## TODO
-Refactor homing capabilities. \
-Refactor index calculations.\
-Look into "crosses initialization" case statement error.

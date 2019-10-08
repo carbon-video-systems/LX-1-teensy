@@ -21,16 +21,16 @@
 #include <stdint.h>
 
 #include "ODriveLib.h"
-#include "LS7366R.h"
 #include "options.h"
 
 /* Constants -----------------------------------------------------------*/
-#define TENSION_SCALING_FACTOR  4.26   // scaling factor between one motor revolution and one system revolution
+#define TENSION_SCALING_FACTOR  5   // scaling factor between one motor revolution and one system revolution
+#define REINDEX_FACTOR          3   // TENSION_SCALING_FACTOR / 2 > rounded up
 
 /* Functions------------------------------------------------------------*/
 class StormBreaker {
 public:
-    StormBreaker(ODriveClass& odrive, LS7366R& encoder) : odrive_(odrive), encoder_(encoder) {}
+    StormBreaker(ODriveClass& odrive) : odrive_(odrive){}
 
     enum MessageType_t {
         ERROR = -2,
@@ -71,8 +71,9 @@ public:
     } ArtNetHead;
 
     struct SystemIndex_t {
-        int32_t pan_index;
-        int32_t tilt_index;
+        float pan_index;
+        float tilt_index;
+        int start_index;
         bool encoder_direction;
     } SystemIndex;
 
@@ -80,12 +81,12 @@ public:
 
 private:
     ODriveClass& odrive_;
-    LS7366R& encoder_;
 
     // body functions
     void receiveArtNetBody();
     void serviceArtNetBody();
     void ArtNetPan();
+    void pan_reindex();
     // head functions
     void receiveArtNetHead();
     void serviceArtNetHead();
@@ -94,6 +95,7 @@ private:
     void ArtNetZoom();
     void ArtNetFocus();
     void ArtNetTilt();
+    void tilt_reindex();
     // common functions
     void ArtNetPanTiltSpeed();
     void ArtNetPowerSpecialFunctions();

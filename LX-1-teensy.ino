@@ -23,7 +23,6 @@
 #include "debug.h"
 #include "ODriveLib.h"
 #include "stormbreaker.h"
-#include "LS7366R.h"
 
 /*Errors-------------------------------------------------------------------------------------------*/
 #if (!(((defined BODY) == (defined HEAD)) == (defined BOTH_FOR_TESTING))) || (defined BODY && defined HEAD)
@@ -45,15 +44,10 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 
 /* Variables --------------------------------------------------------------------------------------*/
 ODriveClass odrive(odrive_serial);
-
 #ifdef TESTING
-    LS7366R encoder(COUNTER_SELECT_PIN, counterBytes, true);
     Debug debugger(odrive);
-#else
-    LS7366R encoder(COUNTER_SELECT_PIN, counterBytes);
 #endif
-
-StormBreaker thor(odrive, encoder);
+StormBreaker thor(odrive);
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -63,9 +57,11 @@ StormBreaker thor(odrive, encoder);
  */
 void setup()
 {
-    // YOU CANNOT USE THE BUILT IN LED > SPI SCK0 on pin 13!
-    // pinMode(LED_BUILTIN, OUTPUT);
-    // digitalWrite(LED_BUILTIN, HIGH);
+    // power-on status LED
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+
+    pinMode(HALL_SENSOR, INPUT);
 
     // ODrive uses 115200 baud
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);
@@ -84,7 +80,6 @@ void setup()
     #endif
 
     odrive_startup_sequence(odrive);
-    encoder.begin();
 
     #ifdef TESTING
         SerialUSB.println("Hi computer, how are you today? :D");
@@ -93,7 +88,7 @@ void setup()
 
     delay(100);
 
-    lx1_startup_sequence(odrive, encoder, thor);
+    lx1_startup_sequence(odrive, thor);
 }
 
 /**
