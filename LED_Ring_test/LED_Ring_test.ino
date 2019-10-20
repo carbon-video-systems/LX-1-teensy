@@ -1,7 +1,7 @@
 #include "led.h"
 
 void setup() {
-    generateRainbow2();
+    generateRainbow();
     led_begin();
     delay(500);
 }
@@ -15,5 +15,5 @@ void loop() {
 //   setAllColour(PINK, 1000);
 //   setAllColour(ORANGE, 1000);
 //   setAllColour(WHITE, 1000);
-    rainbow2(500);
+    rainbow(500);
 }
