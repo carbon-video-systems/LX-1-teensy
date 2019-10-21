@@ -45,6 +45,7 @@ public:
         SIZE_IDENT = 0,
         SIZE_BODY = 5,
         SIZE_HEAD = 11
+        // SIZE_HEAD = 14
     };
 
     struct Header_t {
@@ -68,6 +69,9 @@ public:
         uint8_t tilt_control;
         uint8_t pan_tilt_speed;
         uint8_t power_special_functions;
+        // uint8_t led_ring_red;
+        // uint8_t led_ring_green;
+        // uint8_t led_ring_blue;
     } ArtNetHead;
 
     struct SystemIndex_t {
@@ -94,6 +98,7 @@ private:
     void ArtNetIris();
     void ArtNetZoom();
     void ArtNetFocus();
+    // void ArtNetLEDRing();
     void ArtNetTilt();
     void tilt_reindex();
     // common functions

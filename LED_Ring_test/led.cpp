@@ -104,7 +104,7 @@ void setAllColour(int colour, int delay_millis)
   * @param  uint8_t blue - setting for the blue channel
   * @return void
   */
-void ArtNetUpdate(uint8_t red, uint8_t green, uint8_t blue){
+void ArtNetLEDUpdate(uint8_t red, uint8_t green, uint8_t blue){
     for (uint32_t i = (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
         leds.setPixel(i, red, green, blue);
     }

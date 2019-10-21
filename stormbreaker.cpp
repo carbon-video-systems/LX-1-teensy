@@ -225,6 +225,9 @@ void StormBreaker::receiveArtNetHead()
     ArtNetHead.tilt_control = pi_serial.read();
     ArtNetHead.pan_tilt_speed = pi_serial.read();
     ArtNetHead.power_special_functions = pi_serial.read();
+    // ArtNetHead.led_ring_red = pi_serial.read();
+    // ArtNetHead.led_ring_green = pi_serial.read();
+    // ArtNetHead.led_ring_blue = pi_serial.read();
 
     #ifdef TESTING
         SerialUSB.print("ArtNetHead packet: ");
@@ -243,6 +246,12 @@ void StormBreaker::receiveArtNetHead()
         SerialUSB.print(ArtNetHead.pan_tilt_speed);
         SerialUSB.print(" ");
         SerialUSB.println(ArtNetHead.power_special_functions);
+        // SerialUSB.print(" ");
+        // SerialUSB.print(ArtNetHead.led_ring_red);
+        // SerialUSB.print(" ");
+        // SerialUSB.print(ArtNetHead.led_ring_green);
+        // SerialUSB.print(" ");
+        // SerialUSB.println(ArtNetHead.led_ring_blue);
     #endif
 }
 
@@ -255,6 +264,7 @@ void StormBreaker::serviceArtNetHead()
     ArtNetPanTiltSpeed();
     ArtNetTilt();
     ArtNetPowerSpecialFunctions();
+    // ArtNetLEDRing();
 }
 
 void StormBreaker::ArtNetStrobeShutter()
@@ -289,6 +299,11 @@ void StormBreaker::ArtNetFocus()
     //control focus stepper motor
     // constrain and map input to a range
 }
+
+// void StormBreaker::ArtNetLEDRing()
+// {
+//     // Updates the LED Ring with received RGB values
+// }
 
 // Handles both tilt and tilt control functions
 void StormBreaker::ArtNetTilt()
@@ -357,7 +372,7 @@ void StormBreaker::tilt_reindex()
 }
 
 //
-#endif
+#endif  // HEAD || BOTH_FOR_TESTING
 
 void StormBreaker::ArtNetPanTiltSpeed()
 {
