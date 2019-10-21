@@ -100,8 +100,6 @@ void setup()
  */
 void loop()
 {
-    static bool fan_select = true;
-
     if(pi_serial.available())
         thor.serviceStormBreaker();
 
@@ -109,6 +107,8 @@ void loop()
         if(SerialUSB.available())
             debugger.serviceDebug();
     #endif
+
+    static bool fan_select = true;
 
     if (temperatureCheckTiming >= temperatureTimingThreshold){
         if (fan_select)
