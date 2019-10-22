@@ -49,11 +49,7 @@ void ArtNetLEDUpdate(uint8_t red, uint8_t green, uint8_t blue);
 void colorWipe(int);
 
 void generateRainbow(void);
-void generateRainbow2(void);
-void generateRainbow6(void);
 void rainbow(int delay_ms);
-void rainbow2(int delay_ms);
-void rainbow6(int delay_ms);
 int makeColor(unsigned int hue, unsigned int saturation, unsigned int lightness);
 unsigned int h2rgb(unsigned int v1, unsigned int v2, unsigned int hue);
 

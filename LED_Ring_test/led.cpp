@@ -17,14 +17,12 @@
 #include "WS2811.h"
 
 /* Constants -----------------------------------------------------------*/
-#define RAINBOW_RESOLUTION  2
+#define RAINBOW_RESOLUTION  6
 
-#define RAINBOW_LIGHTNESS   20
+#define RAINBOW_LIGHTNESS   2
 #define RAINBOW_SATURATION  100
-#define LED_STRIP_2         30
-#define LED_STRIP_6         90
 
-const int ledsStrip = 15;
+const int ledsStrip = 60;
 const int config = WS2811_GRB | WS2811_800kHz;
 const int rainbow_bound = ledsStrip * RAINBOW_RESOLUTION;
 
@@ -35,8 +33,6 @@ int drawingMemory[ledsStrip*6];
 OctoWS2811 leds(ledsStrip, displayMemory, drawingMemory, config);
 
 int rainbowColors[rainbow_bound];
-int rainbowColors2[ledsStrip * 2];
-int rainbowColors6[ledsStrip * 6];
 
 /* Functions------------------------------------------------------------*/
 /**
@@ -76,7 +72,8 @@ void colorWipe(int color)
   * @return void
   */
 void setAllColour(int colour){
-    for (int i= (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
+    // for (int i= (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
+    for (int i= 0; i < ledsStrip; i++){
         leds.setPixel(i, colour);
     }
     leds.show();
@@ -90,7 +87,8 @@ void setAllColour(int colour){
   */
 void setAllColour(int colour, int delay_millis)
 {
-  for (int i= (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
+  // for (int i= (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
+    for (int i= 0; i < ledsStrip; i++){
     leds.setPixel(i, colour);
   }
   leds.show();
@@ -105,7 +103,8 @@ void setAllColour(int colour, int delay_millis)
   * @return void
   */
 void ArtNetLEDUpdate(uint8_t red, uint8_t green, uint8_t blue){
-    for (uint32_t i = (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
+    // for (uint32_t i = (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
+    for (uint32_t i = 0; i < ledsStrip; i++){
         leds.setPixel(i, red, green, blue);
     }
     leds.show();
@@ -125,113 +124,18 @@ void generateRainbow(void){
   }
 }
 
-void generateRainbow2(void){
-    //  hue:        0 to 359 - position on the color wheel, 0=red, 60=orange,
-    //                            120=yellow, 180=green, 240=blue, 300=violet
-    //  saturation: 0 to 100 - how bright or dull the color, 100=full, 0=gray
-    //  lightness:  0 to 100 - how light the color is, 100=white, 50=color, 0=black
-    for (int i=0; i < (2 * ledsStrip); i++) {
-        int hue = i * 180 / ledsStrip;
-        int saturation = RAINBOW_SATURATION;
-        int lightness = RAINBOW_LIGHTNESS;
-        // pre-compute the 180 rainbow colors
-        rainbowColors2[i] = makeColor(hue, saturation, lightness);
-  }
-}
-
-void generateRainbow6(void){
-    //  hue:        0 to 359 - position on the color wheel, 0=red, 60=orange,
-    //                            120=yellow, 180=green, 240=blue, 300=violet
-    //  saturation: 0 to 100 - how bright or dull the color, 100=full, 0=gray
-    //  lightness:  0 to 100 - how light the color is, 100=white, 50=color, 0=black
-    for (int i=0; i < (6 * ledsStrip); i++) {
-        int hue = i * 60 / ledsStrip;
-        int saturation = RAINBOW_SATURATION;
-        int lightness = RAINBOW_LIGHTNESS;
-        // pre-compute the 180 rainbow colors
-        rainbowColors6[i] = makeColor(hue, saturation, lightness);
-  }
-}
 
 void rainbow(int delay_ms)
 {
     static int shift = 0;
-    // int displacement = ledsStrip - shift;
-
-    // for (int i = 0; i < ledsStrip; i++){
-    //     if (i < displacement)
-    //         leds.setPixel(4 * ledsStrip + i, rainbowColors[i + shift]);
-    //     else
-    //         leds.setPixel(4 * ledsStrip + i, rainbowColors[i - displacement]);
-    // }
 
     for (int i = 0; i < ledsStrip; i++){
-        leds.setPixel(4 * ledsStrip + i, rainbowColors[(RAINBOW_RESOLUTION * i + shift) % rainbow_bound]);
+        // leds.setPixel(4 * ledsStrip + i, rainbowColors[(RAINBOW_RESOLUTION * i + shift) % rainbow_bound]);
+        leds.setPixel(i, rainbowColors[(RAINBOW_RESOLUTION * i + shift) % rainbow_bound]);
     }
-
     leds.show();
 
     if (shift >= rainbow_bound - 1)
-        shift = 0;
-    else
-        shift++;
-
-    delay(delay_ms);
-}
-
-void rainbow2(int delay_ms)
-{
-    static int shift = 0;
-    // int displacement = (2 * ledsStrip) - shift;
-
-    // for (int i = 0; i < ledsStrip; i++){
-    //     if (i <= (displacement / 2))
-    //         leds.setPixel(4 * ledsStrip + i, rainbowColors2[2 * i + shift]);
-    //     else
-    //         leds.setPixel(4 * ledsStrip + i, rainbowColors2[2 * i - displacement]);
-    // }
-
-    for (int i = 0; i < ledsStrip; i++){
-        leds.setPixel(4 * ledsStrip + i, rainbowColors2[(2 * i + shift) % LED_STRIP_2]);
-    }
-    leds.show();
-
-    if (shift >= (2 * ledsStrip - 1))
-        shift = 0;
-    else
-        shift++;
-
-    delay(delay_ms);
-}
-
-void rainbow6(int delay_ms)
-{
-    // static int shift = 0;
-    // int displacement = (6 * ledsStrip) - shift;
-
-    // for (int i = 0; i < ledsStrip; i++){
-    //     if (i <= (displacement / 6))
-    //         leds.setPixel(4 * ledsStrip + i, rainbowColors6[6 * i + shift]);
-    //     else
-    //         leds.setPixel(4 * ledsStrip + i, rainbowColors6[6 * i - displacement]);
-    // }
-    // leds.show();
-
-    // if (shift >= (6 * ledsStrip - 1))
-    //     shift = 0;
-    // else
-    //     shift++;
-
-    // delay(delay_ms);
-
-    static int shift = 0;
-
-    for (int i = 0; i < ledsStrip; i++){
-        leds.setPixel(4 * ledsStrip + i, rainbowColors6[(6 * i + shift) % LED_STRIP_6]);
-    }
-    leds.show();
-
-    if (shift >= (6 * ledsStrip - 1))
         shift = 0;
     else
         shift++;

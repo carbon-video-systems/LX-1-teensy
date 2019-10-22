@@ -15,5 +15,5 @@ void loop() {
 //   setAllColour(PINK, 1000);
 //   setAllColour(ORANGE, 1000);
 //   setAllColour(WHITE, 1000);
-    rainbow(500);
+    rainbow(1);
 }
