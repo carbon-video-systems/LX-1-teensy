@@ -58,6 +58,11 @@ void led_begin(bool startup)
         leds.show();
 }
 
+/**
+  * @brief  Sets all pixels (8 channels) to the received colour
+  * @param  int color - RGB value to set the pixels to
+  * @return void
+  */
 void colorWipe(int color)
 {
   for (int i=0; i < leds.numPixels(); i++) {
@@ -104,12 +109,17 @@ void setAllColour(int colour, int delay_millis)
   */
 void ArtNetLEDUpdate(uint8_t red, uint8_t green, uint8_t blue){
     // for (uint32_t i = (4 * ledsStrip - 1); i < (5 * ledsStrip - 1); i++){
-    for (uint32_t i = 0; i < ledsStrip; i++){
+    for (int i = 0; i < ledsStrip; i++){
         leds.setPixel(i, red, green, blue);
     }
     leds.show();
 }
 
+/**
+  * @brief  Generates the RGB values of a rainbow of resolution ledsStrip * RAINBOW_RESOLUTION
+  * @param  void
+  * @return void
+  */
 void generateRainbow(void){
     //  hue:        0 to 359 - position on the color wheel, 0=red, 60=orange,
     //                            120=yellow, 180=green, 240=blue, 300=violet
@@ -119,12 +129,16 @@ void generateRainbow(void){
         int hue = i * 360 / rainbow_bound;
         int saturation = RAINBOW_SATURATION;
         int lightness = RAINBOW_LIGHTNESS;
-        // pre-compute the 180 rainbow colors
+        // pre-compute the rainbow colors
         rainbowColors[i] = makeColor(hue, saturation, lightness);
   }
 }
 
-
+/**
+  * @brief  Updates the LEDs to the next colours in the rainbow ring
+  * @param  int delay_ms - delay in milliseconds after executing function
+  * @return void
+  */
 void rainbow(int delay_ms)
 {
     static int shift = 0;
@@ -143,7 +157,13 @@ void rainbow(int delay_ms)
     delay(delay_ms);
 }
 
-// Converts HSL (Hue, Saturation, Lightness) to RGB (Red, Green, Blue)
+/**
+  * @brief  Converts HSL (Hue, Saturation, Lightness) to RGB (Red, Green, Blue)
+  * @param  unsigned int hue - HSL hue value
+  * @param  unsigned int saturation - HSL saturation value
+  * @param  unsigned int lightness - HSL lightness value
+  * @return int - converted RGB value
+  */
 int makeColor(unsigned int hue, unsigned int saturation, unsigned int lightness)
 {
 	unsigned int red, green, blue;
@@ -171,7 +191,13 @@ int makeColor(unsigned int hue, unsigned int saturation, unsigned int lightness)
 	return (red << 16) | (green << 8) | blue;
 }
 
-
+/**
+  * @brief  Hue to RGB conversion table
+  * @param  unsigned int v1 - HSL var 1 conversion
+  * @param  unsigned int v2 - HSL var 2 conversion
+  * @param  unsigned int hue - HSL hue conversion
+  * @return unsigned int - converted R, G, or B value
+  */
 unsigned int h2rgb(unsigned int v1, unsigned int v2, unsigned int hue)
 {
 	if (hue < 60) return v1 * 60 + (v2 - v1) * hue;
