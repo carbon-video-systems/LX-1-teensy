@@ -18,6 +18,7 @@ public:
     void PowerOff(void);
     void PowerOff1(void);
     void PowerOff2(void);
+    void ZoomIn(void);
 
 private:
     String readString();

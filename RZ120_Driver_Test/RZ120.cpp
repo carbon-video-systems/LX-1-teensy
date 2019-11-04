@@ -41,6 +41,11 @@ void RZ120Class::PowerOff2(void)
     serial_ << 0x02 << 0x41 << 0x44 << 0x5a << 0x5a << 0x3b << 0x50 << 0x4f << 0x46 << 0x03;
 }
 
+void RZ120Class::ZoomIn(void)
+{
+    serial_ << ".";
+}
+
 String RZ120Class::readString() {
     String str = "";
     static const unsigned long timeout = 1000;
