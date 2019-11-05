@@ -1,49 +1,194 @@
+/*
+ * RZ120 Source
+ *
+ * @file    RZ120.cpp
+ * @author  Carbon Video Systems 2019
+ * @description   Panasonic RZ120 RS232 Serial Command Driver.
+ *      Communicates over an RS232 serial line and implements
+ *      control commands for the projector.
+ *
+ * @section LICENSE
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted in accordance with the BSD 3-Clause License.
+ *
+ * Distributed as-is; in accordance with the BSD 3-Clause License.
+ */
 
+/* Includes-------------------------------------------------------------*/
 #include <Arduino.h>
-
 #include "RZ120.h"
 
 // Print with stream operator
 template<class T> inline Print& operator <<(Print &obj,     T arg) { obj.print(arg);    return obj; }
 template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(arg, 4); return obj; }
 
+/* Functions------------------------------------------------------------*/
 RZ120Class::RZ120Class(Stream& serial)
     : serial_(serial) {}
 
-// RZ120 Commands
+// RZ120 Power Commands
+void RZ120Class::PowerQuery(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;QPW";
+    serial_.write(0x03);
+}
+
 void RZ120Class::PowerOn(void)
 {
-    serial_ << ".ADZZ;PON.";
-}
-
-void RZ120Class::PowerOn1(void)
-{
-    serial_ << 0x02 << "ADZZ;PON" << 0x03;
-}
-
-void RZ120Class::PowerOn2(void)
-{
-    serial_ << 0x02 << 0x41 << 0x44 << 0x5a << 0x5a << 0x3b << 0x50 << 0x4f << 0x4e << 0x03;
+    serial_.write(0x02);
+    serial_ << "ADZZ;PON";
+    serial_.write(0x03);
 }
 
 void RZ120Class::PowerOff(void)
 {
-    serial_ << ".ADZZ;POF.";
+    serial_.write(0x02);
+    serial_ << "ADZZ;POF";
+    serial_.write(0x03);
 }
 
-void RZ120Class::PowerOff1(void)
+// RZ120 Shutter Commands
+void RZ120Class::ShutterOff(void)
 {
-    serial_ << 0x02 << "ADZZ;POF" << 0x03;
+    serial_.write(0x02);
+    serial_ << "ADZZ;OSH:0";
+    serial_.write(0x03);
 }
 
-void RZ120Class::PowerOff2(void)
+void RZ120Class::ShutterOn(void)
 {
-    serial_ << 0x02 << 0x41 << 0x44 << 0x5a << 0x5a << 0x3b << 0x50 << 0x4f << 0x46 << 0x03;
+    serial_.write(0x02);
+    serial_ << "ADZZ;OSH:1";
+    serial_.write(0x03);
 }
 
-void RZ120Class::ZoomIn(void)
+void RZ120Class::ShutterToggle(void)
 {
-    serial_ << ".";
+    serial_.write(0x02);
+    serial_ << "ADZZ;OSH";
+    serial_.write(0x03);
+}
+
+void RZ120Class::ShutterQuery(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;QSH";
+    serial_.write(0x03);
+}
+
+// RZ120 Zoom Commands
+void RZ120Class::ZoomInSlow(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI5=+00000";
+    serial_.write(0x03);
+}
+
+void RZ120Class::ZoomInNormal(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI5=+00100";
+    serial_.write(0x03);
+}
+
+void RZ120Class::ZoomInFast(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI5=+00200";
+    serial_.write(0x03);
+}
+
+void RZ120Class::ZoomOutSlow(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI5=+00001";
+    serial_.write(0x03);
+}
+
+void RZ120Class::ZoomOutNormal(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI5=+00101";
+    serial_.write(0x03);
+}
+
+void RZ120Class::ZoomOutFast(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI5=+00201";
+    serial_.write(0x03);
+}
+
+// RZ120 Focus Commands
+void RZ120Class::FocusInSlow(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI4=+00000";
+    serial_.write(0x03);
+}
+
+void RZ120Class::FocusInNormal(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI4=+00100";
+    serial_.write(0x03);
+}
+
+void RZ120Class::FocusInFast(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI4=+00200";
+    serial_.write(0x03);
+}
+
+void RZ120Class::FocusOutSlow(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI4=+00001";
+    serial_.write(0x03);
+}
+
+void RZ120Class::FocusOutNormal(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI4=+00101";
+    serial_.write(0x03);
+}
+
+void RZ120Class::FocusOutFast(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;VXX:LNSI4=+00201";
+    serial_.write(0x03);
+}
+
+// RZ120 Auto Iris Commands
+void RZ120Class::AutoIris(uint8_t iris_setting)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ:OAI:A" << iris_setting;
+    serial_.write(0x03);
+}
+
+void RZ120Class::AutoIrisOff(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;OAI:A000";
+    serial_.write(0x03);
+}
+
+void RZ120Class::AutoIrisMax(void)
+{
+    serial_.write(0x02);
+    serial_ << "ADZZ;OAI:A255";
+    serial_.write(0x03);
+}
+
+void RZ120Class::AutoIrisQuery(void){
+    serial_.write(0x02);
+    serial_ << "ADZZ;QAI:A";
+    serial_.write(0x03);
 }
 
 String RZ120Class::readString() {

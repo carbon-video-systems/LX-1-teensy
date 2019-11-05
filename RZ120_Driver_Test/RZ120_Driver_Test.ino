@@ -37,28 +37,6 @@ void setup() {
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
-    // static bool power_select = true;
-
-    // if (TestTiming >= TimingThreshold){
-    //     if (power_select){
-    //         rz120.PowerOn2();
-
-    //         #ifdef TESTING
-    //             SerialUSB.println("Power on");
-    //         #endif
-    //     } else{
-    //         rz120.PowerOff();
-
-    //         #ifdef TESTING
-    //             SerialUSB.println("Power off");
-    //         #endif
-    //     }
-
-    //     power_select = (!power_select);
-    //     TestTiming = 0;
-    // }
-
     #ifdef TESTING
         if(SerialUSB.available())
             debugger.serviceDebug();

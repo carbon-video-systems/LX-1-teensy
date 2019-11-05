@@ -3,7 +3,7 @@
  *
  * @file    debug.h
  * @author  Carbon Video Systems 2019
- * @description   Debugging the Teensy/ODrive system over serial connection.
+ * @description   Debugging the RZ120 over serial connection.
  *
  * @section LICENSE
  * Redistribution and use in source and binary forms, with or without
