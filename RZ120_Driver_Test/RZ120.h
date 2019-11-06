@@ -26,6 +26,8 @@ class RZ120Class {
 public:
     RZ120Class(Stream& serial);
 
+    void initialize(void);
+
     // Commands
     void PowerQuery(void);
     void PowerOn(void);

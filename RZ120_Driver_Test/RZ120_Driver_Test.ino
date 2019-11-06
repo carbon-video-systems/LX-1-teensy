@@ -34,6 +34,8 @@ void setup() {
     while(!rz120_serial);
 
     TestTiming = 0;
+
+    rz120.initialize();
 }
 
 void loop() {

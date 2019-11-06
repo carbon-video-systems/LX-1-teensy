@@ -18,6 +18,9 @@
 #include <Arduino.h>
 #include "RZ120.h"
 
+/* Constants------------------------------------------------------------*/
+#define ZOOM_FOCUS_MAX  10
+
 // Print with stream operator
 template<class T> inline Print& operator <<(Print &obj,     T arg) { obj.print(arg);    return obj; }
 template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(arg, 4); return obj; }
@@ -25,6 +28,35 @@ template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(a
 /* Functions------------------------------------------------------------*/
 RZ120Class::RZ120Class(Stream& serial)
     : serial_(serial) {}
+
+void RZ120Class::initialize(void)
+{
+    PowerOn();
+    delay(500);
+    PowerQuery();
+    // RECEIVE AND look for QPW response
+    delay(500);
+    ShutterOn();
+    delay(100);
+
+    for (int i = 0; i <= ZOOM_FOCUS_MAX; i++){
+        ZoomOutFast();
+        delay(50);
+        FocusOutFast();
+        delay(50);
+    }
+}
+
+/*
+*   Serial Command Structure:
+*       STX character (0x02 in hex)
+*       Identifier:  AD (ASCII)
+*       Address:    ZZ (ASCII) to broadcast to all connected projectors
+*       ; (ASCII)
+*       Command:    List of commands can be found at
+*       https://business.panasonic.com.au/visual-system/system/files/files/fields/field_file/psd/2019/09/23/rz120_control_commands_1569200088.5256.pdf
+*       ETX character (0x03 in hex)
+*/
 
 // RZ120 Power Commands
 void RZ120Class::PowerQuery(void)
