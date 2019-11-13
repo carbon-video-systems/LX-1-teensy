@@ -23,6 +23,7 @@
 #include "debug.h"
 #include "ODriveLib.h"
 #include "stormbreaker.h"
+#include "led.h"
 
 /*Errors-------------------------------------------------------------------------------------------*/
 #if (!(((defined BODY) == (defined HEAD)) == (defined BOTH_FOR_TESTING))) || (defined BODY && defined HEAD)
@@ -63,6 +64,13 @@ void setup()
 
     pinMode(HALL_SENSOR, INPUT);
 
+    #if defined HEAD || defined BOTH_FOR_TESTING
+        // generates LED rainbow values & initializes LED Ring
+        generateRainbow();
+        led_begin();
+        rainbow();
+    #endif
+
     // ODrive uses 115200 baud
     odrive_serial.begin(ODRIVE_SERIAL_BAUD);
     while(!odrive_serial);
@@ -89,6 +97,18 @@ void setup()
     delay(100);
 
     lx1_startup_sequence(odrive, thor);
+
+    #if defined HEAD || defined BOTH_FOR_TESTING
+        #if defined TESTING
+            while(!SerialUSB.available() && !pi_serial.available()){
+                rainbow(RAINBOW_DELAY);
+            }
+        #else
+            while(!pi_serial.available()){
+                rainbow(RAINBOW_DELAY);
+            }
+        #endif
+    #endif
 }
 
 /**

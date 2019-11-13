@@ -136,6 +136,15 @@ void generateRainbow(void){
 
 /**
   * @brief  Updates the LEDs to the next colours in the rainbow ring
+  * @return void
+  */
+void rainbow(void)
+{
+    rainbow(0);
+}
+
+/**
+  * @brief  Updates the LEDs to the next colours in the rainbow ring
   * @param  int delay_ms - delay in milliseconds after executing function
   * @return void
   */
