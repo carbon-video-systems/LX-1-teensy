@@ -17,6 +17,7 @@
 /* Includes-------------------------------------------------------------*/
 #include "stormbreaker.h"
 #include "calibration.h"
+#include "led.h"
 
 /* Constants -----------------------------------------------------------*/
 #define MAX_STORMBREAKER_LENGTH 11  // maximum size of a stormbreaker message
@@ -225,6 +226,9 @@ void StormBreaker::receiveArtNetHead()
     ArtNetHead.tilt_control = pi_serial.read();
     ArtNetHead.pan_tilt_speed = pi_serial.read();
     ArtNetHead.power_special_functions = pi_serial.read();
+    ArtNetHead.led_ring_red = pi_serial.read();
+    ArtNetHead.led_ring_green = pi_serial.read();
+    ArtNetHead.led_ring_blue = pi_serial.read();
 
     #ifdef TESTING
         SerialUSB.print("ArtNetHead packet: ");
@@ -243,6 +247,12 @@ void StormBreaker::receiveArtNetHead()
         SerialUSB.print(ArtNetHead.pan_tilt_speed);
         SerialUSB.print(" ");
         SerialUSB.println(ArtNetHead.power_special_functions);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.led_ring_red);
+        SerialUSB.print(" ");
+        SerialUSB.print(ArtNetHead.led_ring_green);
+        SerialUSB.print(" ");
+        SerialUSB.println(ArtNetHead.led_ring_blue);
     #endif
 }
 
@@ -255,6 +265,7 @@ void StormBreaker::serviceArtNetHead()
     ArtNetPanTiltSpeed();
     ArtNetTilt();
     ArtNetPowerSpecialFunctions();
+    ArtNetLEDRing();
 }
 
 void StormBreaker::ArtNetStrobeShutter()
@@ -288,6 +299,11 @@ void StormBreaker::ArtNetFocus()
 {
     //control focus stepper motor
     // constrain and map input to a range
+}
+
+void StormBreaker::ArtNetLEDRing()
+{
+    ArtNetLEDUpdate(ArtNetHead.led_ring_red, ArtNetHead.led_ring_green, ArtNetHead.led_ring_blue);
 }
 
 // Handles both tilt and tilt control functions
@@ -337,7 +353,7 @@ void StormBreaker::ArtNetTilt()
                 odrive_.SetVelocity(AXIS_HEAD, (VEL_VEL_LIMIT - ((ArtNetHead.tilt_control - 1) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             } else if((ArtNetHead.tilt_control >= 130) && (ArtNetHead.tilt_control <= 255)){
                 //scale based on the velocity limit CCW
-                odrive_.SetVelocity(AXIS_BODY, ((129 - ArtNetHead.tilt_control) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT))); //note velocity can never be zero
+                odrive_.SetVelocity(AXIS_HEAD, ((129 - ArtNetHead.tilt_control) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT))); //note velocity can never be zero
                 // odrive_.SetVelocity(AXIS_HEAD, (-VEL_VEL_LIMIT + ((ArtNetHead.tilt_control - 130) * ARTNET_VELOCITY_SCALING_FACTOR(VEL_VEL_LIMIT)))); //note velocity can never be zero
             }
             if (prev_tilt_control == 0 || prev_tilt_control == 128)
@@ -357,7 +373,7 @@ void StormBreaker::tilt_reindex()
 }
 
 //
-#endif
+#endif  // HEAD || BOTH_FOR_TESTING
 
 void StormBreaker::ArtNetPanTiltSpeed()
 {
