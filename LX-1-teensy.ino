@@ -21,6 +21,7 @@
 #include "options.h"
 #include "calibration.h"
 #include "debug.h"
+#include "fan.h"
 #include "ODriveLib.h"
 #include "stormbreaker.h"
 #include "led.h"
@@ -49,6 +50,8 @@ ODriveClass odrive(odrive_serial);
     Debug debugger(odrive);
 #endif
 StormBreaker thor(odrive);
+
+elapsedMillis temperatureCheckTiming;
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -85,17 +88,13 @@ void setup()
         // USB uses 9600 baud
         SerialUSB.begin(USB_SERIAL_BAUD);
         while (!SerialUSB); // wait for Arduino Serial Monitor to open
-    #endif
 
-    odrive_startup_sequence(odrive);
-
-    #ifdef TESTING
         SerialUSB.println("Hi computer, how are you today? :D");
         pi_serial.println("Hi Raspberry Pi how are you today? :D");
     #endif
 
+    odrive_startup_sequence(odrive);
     delay(100);
-
     lx1_startup_sequence(odrive, thor);
 
     #if defined HEAD || defined BOTH_FOR_TESTING
@@ -109,6 +108,9 @@ void setup()
             }
         #endif
     #endif
+  
+    initFans();
+    temperatureCheckTiming = 0;
 }
 
 /**
@@ -125,4 +127,16 @@ void loop()
         if(SerialUSB.available())
             debugger.serviceDebug();
     #endif
+
+    static bool fan_select = true;
+
+    if (temperatureCheckTiming >= temperatureTimingThreshold){
+        if (fan_select)
+            runFan1();
+        else
+            runFan2();
+
+        fan_select = (!fan_select);
+        temperatureCheckTiming = 0;
+    }
 }
