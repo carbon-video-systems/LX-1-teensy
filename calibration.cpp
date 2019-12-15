@@ -24,27 +24,28 @@
 /* Constants -----------------------------------------------------------*/
 // ODrive Limits
 #define BRAKING_RESISTANCE   2.0f   // ohms
-#define CURRENT_LIM         10.0f  // amps
+#define CURRENT_LIM         30.0f  // amps
 #define CALIBRATION_CURRENT 15.0f  //amps
-#define VEL_LIMIT           300000.0f // counts/s
+#define VEL_LIMIT           90112.0f // counts/s
 #define POLE_PAIRS          20   // magnet poles / 2
 #define MOTOR_TYPE          ODriveClass::MOTOR_TYPE_HIGH_CURRENT
 #define CPR                 8192    // counts/revolution
 #define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL
+#define ENCODER_BANDWIDTH   3250.0f // units unsure
 
 #define HOMING_VELOCITY     4096    //counts per second
 
 // ODrive PID Calibration
-#define PID_POS_GAIN_BODY        50.0f       //default 20
-#define PID_VEL_GAIN_BODY        0.0005f     //default 0.0005
-#define PID_VEL_INT_GAIN_BODY    0.0025f     //default 0.001
+#define PID_POS_GAIN_BODY        85.0f       //default 20
+#define PID_VEL_GAIN_BODY        0.0006f     //default 0.0005
+#define PID_VEL_INT_GAIN_BODY    0.0008f     //default 0.001
 
-#define PID_POS_GAIN_HEAD        50.0f       //default 20
-#define PID_VEL_GAIN_HEAD        0.0005f     //default 0.0005
-#define PID_VEL_INT_GAIN_HEAD    0.0025f     //default 0.001
+#define PID_POS_GAIN_HEAD        135.0f       //default 20
+#define PID_VEL_GAIN_HEAD        0.0009f     //default 0.0005
+#define PID_VEL_INT_GAIN_HEAD    0.0007f     //default 0.001
 
 // ODrive startup settings
-#define STARTUP_TIMEOUT                     30000   // 20 seconds in millis
+#define STARTUP_TIMEOUT                     30000   // 30 seconds in millis
 #define STARTUP_MOTOR_CALIBRATION           false
 #define STARTUP_ENCODER_SEARCH              true
 #define STARTUP_ENCODER_OFFSET_CALIBRATION  false
@@ -223,9 +224,14 @@ void encoder_calibrate(ODriveClass& odrive, int axis)
     #endif
 
     odrive.EncoderUseIndex(axis, ENCODER_USE_INDEX);
+    delay(15);
     odrive.run_state(axis, ODriveClass::AXIS_STATE_ENCODER_INDEX_SEARCH, true);
+    delay(2000);
     odrive.run_state(axis, ODriveClass::AXIS_STATE_ENCODER_OFFSET_CALIBRATION, true);
+    delay(1000);
     odrive.EncoderPreCalibrated(axis, ENCODER_PRE_CALIBRATED);
+    delay(15);
+    odrive.EncoderBandwidth(axis, ENCODER_BANDWIDTH);
     delay(50);
 }
 

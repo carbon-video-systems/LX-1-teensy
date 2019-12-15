@@ -132,6 +132,10 @@ void ODriveClass::EncoderPreCalibrated(int axis, bool request){
     serial_ << "w axis" << axis << ".encoder.config.pre_calibrated " << request << "\n";
 }
 
+void ODriveClass::EncoderBandwidth(int axis, float bandwidth){
+    serial_ << "w axis" << axis << ".encoder.config.bandwidth " << bandwidth << "\n";
+}
+
 // Startup Configuration Commands
 void ODriveClass::StartupMotorCalibration(int axis, bool request){
     serial_ << "w axis" << axis << ".config.startup_motor_calibration " << request << "\n";
