@@ -27,7 +27,7 @@
 #define CURRENT_LIM         10.0f  // amps
 #define CALIBRATION_CURRENT 15.0f  //amps
 #define VEL_LIMIT           300000.0f // counts/s
-#define POLE_PAIRS          7   // magnet poles / 2
+#define POLE_PAIRS          20   // magnet poles / 2
 #define MOTOR_TYPE          ODriveClass::MOTOR_TYPE_HIGH_CURRENT
 #define CPR                 8192    // counts/revolution
 #define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL

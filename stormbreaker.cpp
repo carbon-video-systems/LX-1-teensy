@@ -20,7 +20,7 @@
 #include "led.h"
 
 /* Constants -----------------------------------------------------------*/
-#define MAX_STORMBREAKER_LENGTH 11  // maximum size of a stormbreaker message
+#define MAX_STORMBREAKER_LENGTH 14  // maximum size of a stormbreaker message
 
 #define MOTOR_ENCODER_COUNT CPR //depends on the DIP switches inside the AMT102
 #define PAN_TILT_COUNT_MAXIMUM 65536 //2 byte resolution for pan/tilt control
