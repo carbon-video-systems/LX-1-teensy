@@ -38,7 +38,7 @@
 #if defined BODY
     /* Body specific stuff */
     #define NUM_MOTORS      1
-    #define AXIS_BODY       1
+    #define AXIS_BODY       0
     #define IDENTIFIER      0xAF
 #elif defined HEAD
     /* Head specific stuff */
