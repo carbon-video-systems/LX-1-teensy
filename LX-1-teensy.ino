@@ -108,7 +108,7 @@ void setup()
             }
         #endif
     #endif
-  
+
     initFans();
     temperatureCheckTiming = 0;
 }
@@ -120,7 +120,7 @@ void setup()
  */
 void loop()
 {
-    if(pi_serial.available())
+    if(pi_serial.available() >= 2)
         thor.serviceStormBreaker();
 
     #ifdef TESTING
