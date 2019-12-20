@@ -62,6 +62,23 @@ void initFans(void)
 }
 
 /**
+  * @brief  Chooses which fan to update.
+  * @param  void
+  * @return void
+  */
+void runFans(void)
+{
+    static bool fan_select = true;
+
+    if (fan_select)
+        runFan1();
+    else
+        runFan2();
+
+    fan_select = (!fan_select);
+}
+
+/**
   * @brief  Reads temperature sensor #1 and runs fan #1 accordingly.
   * @param  void
   * @return void
