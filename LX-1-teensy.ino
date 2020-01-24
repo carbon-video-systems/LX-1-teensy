@@ -97,7 +97,7 @@ void setup()
     while(!pi_serial);
 
     #ifdef TESTING
-        // USB uses 9600 baud
+        // USB uses 115200 baud
         SerialUSB.begin(USB_SERIAL_BAUD);
         while (!SerialUSB); // wait for Arduino Serial Monitor to open
 
@@ -128,13 +128,15 @@ void setup()
 
     #if defined HEAD && defined LED_RING
         #if defined TESTING
-            while(!SerialUSB.available() && !pi_serial.available()){
+            while(SerialUSB.available() < 2 && pi_serial.available() < 2){
                 rainbow(RAINBOW_DELAY);
             }
+            setAllColour(GREEN);
         #else
-            while(!pi_serial.available()){
+            while(pi_serial.available() < 2){
                 rainbow(RAINBOW_DELAY);
             }
+            setAllColour(GREEN);
         #endif
     #endif
 }

@@ -275,7 +275,9 @@ void StormBreaker::serviceArtNetHead()
     ArtNetPanTiltSpeed();
     ArtNetTilt();
     ArtNetPowerSpecialFunctions();
-    ArtNetLEDRing();
+    #if defined LED_RING
+        ArtNetLEDRing();
+    #endif
 }
 
 void StormBreaker::ArtNetStrobeShutter()
