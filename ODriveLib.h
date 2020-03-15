@@ -112,6 +112,7 @@ public:
     int EncoderReadyStatus(int axis);
     void EncoderUseIndex(int axis, bool request);
     void EncoderPreCalibrated(int axis, bool request);
+    void EncoderBandwidth(int axis, float bandwidth);
 
     // Startup Configuration Commands
     void StartupMotorCalibration(int axis, bool request);

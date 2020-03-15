@@ -36,7 +36,7 @@
 #define ORANGE 0x100400
 #define WHITE  0x101010
 
-#define RAINBOW_DELAY   20
+#define RAINBOW_DELAY   5
 
 /* Includes-------------------------------------------------------------*/
 

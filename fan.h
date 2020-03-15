@@ -22,6 +22,7 @@
 
 /* Functions------------------------------------------------------------*/
 void initFans(void);
+void runFans(void);
 void runFan1(void);
 void runFan2(void);
 

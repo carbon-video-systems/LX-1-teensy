@@ -20,7 +20,7 @@
 #include "led.h"
 
 /* Constants -----------------------------------------------------------*/
-#define MAX_STORMBREAKER_LENGTH 11  // maximum size of a stormbreaker message
+#define MAX_STORMBREAKER_LENGTH 14  // maximum size of a stormbreaker message
 
 #define MOTOR_ENCODER_COUNT CPR //depends on the DIP switches inside the AMT102
 #define PAN_TILT_COUNT_MAXIMUM 65536 //2 byte resolution for pan/tilt control
@@ -37,66 +37,76 @@
 /* Functions------------------------------------------------------------*/
 void StormBreaker::serviceStormBreaker()
 {
-    Header.type = (StormBreaker::MessageType_t)pi_serial.read(); //TODO: check if read returns -1 and then throw an error (do this for all occurrences)
-    Header.size = (StormBreaker::MessageSize_t)pi_serial.read();
+    Header.type = (StormBreaker::MessageType_t)pi_serial.read();
 
-    switch(Header.size){
-    case SIZE_IDENT:
-        if (Header.type != IDENTIFY)
-            Header.type = WARNING;
+    #ifdef TESTING
+        SerialUSB.println("Received message");
+        SerialUSB.print("Type: ");
+        SerialUSB.print(Header.type);
+    #endif
+
+    switch(Header.type){
+    case ARTNETBODY:
         break;
-    case SIZE_BODY:
-        if (Header.type != ARTNETBODY)
-            Header.type = WARNING;
+    case ARTNETHEAD:
         break;
-    case SIZE_HEAD:
-        if (Header.type != ARTNETHEAD)
-            Header.type = WARNING;
+    case IDENTIFY:
         break;
     default:
-        Header.type = ERROR;
+        #ifdef TESTING
+            SerialUSB.println("TYPE ERROR");
+        #endif
+        return;
         break;
     }
 
+    Header.size = (StormBreaker::MessageSize_t)pi_serial.read();
+
     #ifdef TESTING
-        SerialUSB.println("Received StormBreaker message");
-        SerialUSB.print("Type: ");
-        SerialUSB.print(Header.type);
         SerialUSB.print("   Size: ");
         SerialUSB.println(Header.size);
     #endif
 
-    switch(Header.type){
-    case ERROR:
-        #ifdef TESTING
-            SerialUSB.println("ERROR");
-        #endif
+    switch(Header.size){
+    case SIZE_IDENT:
+        if (Header.type == IDENTIFY)
+            serviceIdentify();
+        else{
+            #ifdef TESTING
+                SerialUSB.println("SIZE ERROR");
+            #endif
+        }
         break;
-    case WARNING:
-        #ifdef TESTING
-            SerialUSB.println("WARNING");
-        #endif
+    case SIZE_BODY:
+        if (Header.type == ARTNETBODY){
+            #if defined BODY || defined BOTH_FOR_TESTING
+                receiveArtNetBody();
+                serviceArtNetBody();
+            #endif
+        }
+        else{
+            #ifdef TESTING
+                SerialUSB.println("SIZE ERROR");
+            #endif
+        }
         break;
-    case OK:
-        break;
-    case ARTNETBODY:
-        #if defined BODY || defined BOTH_FOR_TESTING
-            receiveArtNetBody();
-            serviceArtNetBody();
-        #endif
-        break;
-
-    case ARTNETHEAD:
-        #if defined HEAD || defined BOTH_FOR_TESTING
-            receiveArtNetHead();
-            serviceArtNetHead();
-        #endif
-        break;
-
-    case IDENTIFY:
-        serviceIdentify();
+    case SIZE_HEAD:
+        if (Header.type == ARTNETHEAD){
+            #if defined HEAD || defined BOTH_FOR_TESTING
+                receiveArtNetHead();
+                serviceArtNetHead();
+            #endif
+        }
+        else{
+            #ifdef TESTING
+                SerialUSB.println("SIZE ERROR");
+            #endif
+        }
         break;
     default:
+        #ifdef TESTING
+            SerialUSB.println("SIZE ERROR");
+        #endif
         break;
     }
 }
@@ -265,7 +275,9 @@ void StormBreaker::serviceArtNetHead()
     ArtNetPanTiltSpeed();
     ArtNetTilt();
     ArtNetPowerSpecialFunctions();
-    ArtNetLEDRing();
+    #if defined LED_RING
+        ArtNetLEDRing();
+    #endif
 }
 
 void StormBreaker::ArtNetStrobeShutter()

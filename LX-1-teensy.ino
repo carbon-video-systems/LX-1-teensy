@@ -30,12 +30,18 @@
 #if (!(((defined BODY) == (defined HEAD)) == (defined BOTH_FOR_TESTING))) || (defined BODY && defined HEAD)
     #error Check your system settings in options.h!  Only one of BODY, HEAD, or BOTH_FOR_TESTING may be defined!
 #endif
-
 #if defined BOTH_FOR_TESTING
     #warning BOTH_FOR_TESTING is defined! Both motors will spin.  Do not flash this in production.
 #endif
 #if defined TESTING
     #warning TESTING is defined! Do not flash this in production.
+#endif
+
+#if (defined HEAD && !(defined LED_RING))
+    #warning LED_RING is not defined!  The LED Ring will not initialize.
+#endif
+#if !defined FANS
+    #warning FANS is not defined!  Cooling fans will not spin.
 #endif
 
 /* Constants --------------------------------------------------------------------------------------*/
@@ -51,7 +57,13 @@ ODriveClass odrive(odrive_serial);
 #endif
 StormBreaker thor(odrive);
 
-elapsedMillis temperatureCheckTiming;
+#ifdef FANS
+    elapsedMillis temperatureCheckTiming;
+#endif
+
+#if defined LED_RING
+    elapsedMillis rainbowTiming;
+#endif
 
 /* Functions --------------------------------------------------------------------------------------*/
 /**
@@ -67,7 +79,7 @@ void setup()
 
     pinMode(HALL_SENSOR, INPUT);
 
-    #if defined HEAD || defined BOTH_FOR_TESTING
+    #if defined HEAD && defined LED_RING
         // generates LED rainbow values & initializes LED Ring
         generateRainbow();
         led_begin();
@@ -85,7 +97,7 @@ void setup()
     while(!pi_serial);
 
     #ifdef TESTING
-        // USB uses 9600 baud
+        // USB uses 115200 baud
         SerialUSB.begin(USB_SERIAL_BAUD);
         while (!SerialUSB); // wait for Arduino Serial Monitor to open
 
@@ -93,24 +105,40 @@ void setup()
         pi_serial.println("Hi Raspberry Pi how are you today? :D");
     #endif
 
+    #if defined HEAD && defined LED_RING
+        rainbow(RAINBOW_DELAY);
+    #endif
+
     odrive_startup_sequence(odrive);
-    delay(100);
+
+    #if defined HEAD && defined LED_RING
+        rainbowTiming = 0;
+        if (rainbowTiming < 100)
+            rainbow(RAINBOW_DELAY);
+    #else
+        delay(100);
+    #endif
+
     lx1_startup_sequence(odrive, thor);
 
-    #if defined HEAD || defined BOTH_FOR_TESTING
+    #ifdef FANS
+        initFans();
+        temperatureCheckTiming = 0;
+    #endif
+
+    #if defined HEAD && defined LED_RING
         #if defined TESTING
-            while(!SerialUSB.available() && !pi_serial.available()){
+            while(SerialUSB.available() < 2 && pi_serial.available() < 2){
                 rainbow(RAINBOW_DELAY);
             }
+            setAllColour(GREEN);
         #else
-            while(!pi_serial.available()){
+            while(pi_serial.available() < 2){
                 rainbow(RAINBOW_DELAY);
             }
+            setAllColour(GREEN);
         #endif
     #endif
-  
-    initFans();
-    temperatureCheckTiming = 0;
 }
 
 /**
@@ -120,7 +148,7 @@ void setup()
  */
 void loop()
 {
-    if(pi_serial.available())
+    if(pi_serial.available() >= 2)
         thor.serviceStormBreaker();
 
     #ifdef TESTING
@@ -128,15 +156,10 @@ void loop()
             debugger.serviceDebug();
     #endif
 
-    static bool fan_select = true;
-
-    if (temperatureCheckTiming >= temperatureTimingThreshold){
-        if (fan_select)
-            runFan1();
-        else
-            runFan2();
-
-        fan_select = (!fan_select);
-        temperatureCheckTiming = 0;
-    }
+    #ifdef FANS
+        if (temperatureCheckTiming >= temperatureTimingThreshold){
+            runFans();
+            temperatureCheckTiming = 0;
+        }
+    #endif
 }

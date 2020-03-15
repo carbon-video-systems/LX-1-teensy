@@ -27,12 +27,12 @@
 
 /* Constants -----------------------------------------------------------*/
 // ODrive Trajectory Control Limits
-#define TRAJ_VEL_LIMIT      128000.0f //needs to be a factor of 256 to work nicely with pan_tilt_speed calculation
-#define TRAJ_ACCEL_LIMIT    202400.0f
-#define TRAJ_DECEL_LIMIT    202400.0f
+#define TRAJ_VEL_LIMIT      40960.0f //needs to be a factor of 256 to work nicely with pan_tilt_speed calculation
+#define TRAJ_ACCEL_LIMIT    25000.0f
+#define TRAJ_DECEL_LIMIT    20000.0f
 
 // ODrive Velocity Control Limits
-#define VEL_VEL_LIMIT       103320.0f //needs to be a factor of 126 to work nicely with velocity calculations
+#define VEL_VEL_LIMIT       81900.0f //needs to be a factor of 126 to work nicely with velocity calculations
 
 // Homing
 #define HALL_SENSOR 35

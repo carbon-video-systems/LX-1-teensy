@@ -20,31 +20,33 @@
 
 #include "calibration.h"
 #include "stormbreaker.h"
+#include "led.h"
 
 /* Constants -----------------------------------------------------------*/
 // ODrive Limits
 #define BRAKING_RESISTANCE   2.0f   // ohms
-#define CURRENT_LIM         10.0f  // amps
+#define CURRENT_LIM         30.0f  // amps
 #define CALIBRATION_CURRENT 15.0f  //amps
-#define VEL_LIMIT           300000.0f // counts/s
-#define POLE_PAIRS          7   // magnet poles / 2
+#define VEL_LIMIT           90112.0f // counts/s
+#define POLE_PAIRS          20   // magnet poles / 2
 #define MOTOR_TYPE          ODriveClass::MOTOR_TYPE_HIGH_CURRENT
 #define CPR                 8192    // counts/revolution
 #define ENCODER_MODE        ODriveClass::ENCODER_MODE_INCREMENTAL
+#define ENCODER_BANDWIDTH   3250.0f // units unsure
 
 #define HOMING_VELOCITY     4096    //counts per second
 
 // ODrive PID Calibration
-#define PID_POS_GAIN_BODY        50.0f       //default 20
-#define PID_VEL_GAIN_BODY        0.0005f     //default 0.0005
-#define PID_VEL_INT_GAIN_BODY    0.0025f     //default 0.001
+#define PID_POS_GAIN_BODY        85.0f       //default 20
+#define PID_VEL_GAIN_BODY        0.0006f     //default 0.0005
+#define PID_VEL_INT_GAIN_BODY    0.0008f     //default 0.001
 
-#define PID_POS_GAIN_HEAD        50.0f       //default 20
-#define PID_VEL_GAIN_HEAD        0.0005f     //default 0.0005
-#define PID_VEL_INT_GAIN_HEAD    0.0025f     //default 0.001
+#define PID_POS_GAIN_HEAD        135.0f       //default 20
+#define PID_VEL_GAIN_HEAD        0.0009f     //default 0.0005
+#define PID_VEL_INT_GAIN_HEAD    0.0007f     //default 0.001
 
 // ODrive startup settings
-#define STARTUP_TIMEOUT                     30000   // 20 seconds in millis
+#define STARTUP_TIMEOUT                     30000   // 30 seconds in millis
 #define STARTUP_MOTOR_CALIBRATION           false
 #define STARTUP_ENCODER_SEARCH              true
 #define STARTUP_ENCODER_OFFSET_CALIBRATION  false
@@ -115,10 +117,22 @@ void odrive_startup_sequence(ODriveClass& odrive)
         #endif
 
         odrive.SaveConfiguration();
-        delay(100);
+        #if defined HEAD && defined LED_RING
+            elapsedMillis rainbowTiming = 0;
+            if (rainbowTiming < 2000)
+                rainbow(RAINBOW_DELAY);
+        #else
+            delay(2000);
+        #endif
 
         odrive.Reboot();
-        delay(2000);
+        #if defined HEAD && defined LED_RING
+            rainbowTiming = 0;
+            if (rainbowTiming < 2000)
+                rainbow(RAINBOW_DELAY);
+        #else
+            delay(2000);
+        #endif
     }
 
     return;
@@ -148,6 +162,9 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
     #endif
 
             elapsedMillis timeout;
+            #if defined HEAD && defined LED_RING
+                elapsedMillis rainbowTiming = 0;
+            #endif
 
             do {
                 current_state = odrive.readState(axis);
@@ -155,7 +172,13 @@ void odrive_startup_check(ODriveClass& odrive, bool calibration_status[])
                     SerialUSB.print("CURRENT STATE: ");
                     SerialUSB.println(current_state);
                 #endif
-                delay(100);
+                #if defined HEAD && defined LED_RING
+                    rainbowTiming = 0;
+                    if (rainbowTiming < 100)
+                        rainbow(RAINBOW_DELAY);
+                #else
+                    delay(100);
+                #endif
             } while (current_state != ODriveClass::AXIS_STATE_CLOSED_LOOP_CONTROL && current_state != ODriveClass::AXIS_STATE_IDLE && timeout <= STARTUP_TIMEOUT);
 
             current_state = odrive.readState(axis);
@@ -223,9 +246,30 @@ void encoder_calibrate(ODriveClass& odrive, int axis)
     #endif
 
     odrive.EncoderUseIndex(axis, ENCODER_USE_INDEX);
+    delay(20);
     odrive.run_state(axis, ODriveClass::AXIS_STATE_ENCODER_INDEX_SEARCH, true);
+
+    #if defined HEAD && defined LED_RING
+        elapsedMillis rainbowTiming = 0;
+        if (rainbowTiming < 2000)
+            rainbow(RAINBOW_DELAY);
+    #else
+        delay(2000);
+    #endif
+
     odrive.run_state(axis, ODriveClass::AXIS_STATE_ENCODER_OFFSET_CALIBRATION, true);
+
+    #if defined HEAD && defined LED_RING
+        rainbowTiming = 0;
+        if (rainbowTiming < 1000)
+            rainbow(RAINBOW_DELAY);
+    #else
+        delay(1000);
+    #endif
+
     odrive.EncoderPreCalibrated(axis, ENCODER_PRE_CALIBRATED);
+    delay(20);
+    odrive.EncoderBandwidth(axis, ENCODER_BANDWIDTH);
     delay(50);
 }
 
@@ -313,7 +357,14 @@ void lx1_startup_sequence(ODriveClass& odrive, StormBreaker& thor){
     #endif
 
     #ifdef TESTING
-        delay(100);
+        #if defined HEAD && defined LED_RING
+            elapsedMillis rainbowTiming = 0;
+            if (rainbowTiming < 100)
+                rainbow(RAINBOW_DELAY);
+        #else
+            delay(100);
+        #endif
+
         odrive.ReadFeedback(axis);
         SerialUSB.print("ODrive encoder count: ");
         SerialUSB.println(odrive.Feedback.position);
@@ -332,12 +383,16 @@ void lx1_startup_sequence(ODriveClass& odrive, StormBreaker& thor){
     odrive.ConfigureTrajVelLimit(axis, HOMING_VELOCITY);
     odrive.ReadFeedback(axis);
     odrive.SetControlModeTraj(axis);
-    odrive.TrapezoidalMove(axis, (odrive.Feedback.position + (CPR * TENSION_SCALING_FACTOR)));
+    #if defined HEAD && defined LED_RING
+        rainbow();
+    #endif
 
     // SEARCH FOR MAG PULSE
     // polling based search:
     bool index_pulse = false;
-    elapsedMillis timeout;
+    elapsedMillis timeout = 0;
+
+    odrive.TrapezoidalMove(axis, (odrive.Feedback.position + (CPR * TENSION_SCALING_FACTOR)));
 
     while (!index_pulse){
         index_pulse = (digitalRead(HALL_SENSOR)== HIGH);
@@ -374,6 +429,11 @@ void startup_index(ODriveClass& odrive, StormBreaker& thor, int axis){
     #if defined HEAD
         // thor.SystemIndex.tilt_index = system_reindex(odrive.Feedback.position, 0, thor.SystemIndex.encoder_direction);
         thor.SystemIndex.tilt_index = thor.SystemIndex.start_index * CPR;
+
+        #ifdef LED_RING
+            rainbow();
+        #endif
+
         #ifdef TESTING
             SerialUSB.print("Tilt Index: ");
             SerialUSB.println(thor.SystemIndex.tilt_index);
@@ -433,13 +493,33 @@ float system_reindex(float odrive_position, int start_index){
     odrive.TrapezoidalMove(axis, index);
 
     if (startup){
-        delay(1000);
+        #if defined HEAD && defined LED_RING
+            elapsedMillis rainbowTiming = 0;
+            if (rainbowTiming < 1000)
+                rainbow(RAINBOW_DELAY);
+        #else
+            delay(1000);
+        #endif
+
         do {
-            delay(500);
+            #if defined HEAD && defined LED_RING
+                rainbowTiming = 0;
+                if (rainbowTiming < 500)
+                    rainbow(RAINBOW_DELAY);
+            #else
+                delay(500);
+            #endif
+
             odrive.ReadFeedback(axis);
         }
         while (abs(odrive.Feedback.velocity) >= 1);
 
-        delay(250);
+        #if defined HEAD && defined LED_RING
+            rainbowTiming = 0;
+            if (rainbowTiming < 250)
+                rainbow(RAINBOW_DELAY);
+        #else
+            delay(250);
+        #endif
     }
  }
